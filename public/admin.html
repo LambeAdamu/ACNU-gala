@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gala &amp; Awards 2027 — Console de vérification des paiements ACNU. Accès réservé aux administrateurs.">
+  <title>Espace administrateur — Gala &amp; Awards 2027 · ACNU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Admin-only header (not the public site header) and centered login card */
+    .admin-header {
+      --admin-header-h: 64px;
+      height: var(--admin-header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      background: rgba(12, 10, 9, 0.85);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      z-index: 100;
+    }
+    .admin-header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-2), var(--gold), var(--gold-deep), transparent);
+    }
+    .admin-header__title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .admin-header__title .accent { color: var(--gold-2); }
+    .admin-header__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-header__link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-2);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      transition: color 0.18s var(--ease), background 0.18s var(--ease);
+    }
+    .admin-header__link:hover { color: var(--ink); background: var(--glass); }
+    .admin-header__link--logout {
+      color: var(--gold-2);
+      border: 1px solid var(--line-gold);
+      box-shadow: inset 0 0 0 1.5px transparent;
+    }
+    .admin-header__link--logout:hover {
+      box-shadow: inset 0 0 0 1.5px var(--gold-2);
+      background: rgba(216, 161, 62, 0.08);
+    }
+    /* Login card: centered in the space below the admin header */
+    .gate { min-height: calc(100vh - var(--admin-header-h, 64px)); }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au contenu principal</a>
+
+  <header class="admin-header">
+    <h1 class="admin-header__title">ACNU <span class="accent">· Tableau de bord</span></h1>
+    <div class="admin-header__actions">
+      <a class="admin-header__link" href="index.html">Retour au site</a>
+      <button type="button" class="admin-header__link admin-header__link--logout" id="logoutBtn" hidden>Déconnexion</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ Gate ============ -->
+    <section id="gate" class="gate" aria-label="Connexion administrateur">
+      <div class="panel gate__card">
+        <div class="tx-card" style="text-align:center">
+          <div class="tx-card__icon" style="color:var(--gold-2); border-color:var(--line-gold); background:rgba(216,161,62,.1)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <h3>Espace Payment Administrator</h3>
+          <p>Accès réservé. Vérifiez les preuves et approuvez ou rejetez les transactions.</p>
+
+          <div class="form" style="text-align:left">
+            <div class="field">
+              <label for="gateEmail">Email <span class="req" aria-hidden="true">*</span></label>
+              <input id="gateEmail" type="email" name="email" autocomplete="email" inputmode="email" required>
+            </div>
+            <div class="field input--reveal">
+              <label for="gatePass">Mot de passe <span class="req" aria-hidden="true">*</span></label>
+              <input id="gatePass" type="password" name="password" autocomplete="current-password" required>
+              <button type="button" class="field__toggle" id="gatePassToggle" aria-label="Afficher le mot de passe" aria-pressed="false">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+              </button>
+              <span id="gateHint" class="error" role="alert" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:15px;height:15px"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span></span>
+              </span>
+            </div>
+            <button class="btn" type="button" id="gateSubmit" style="width:100%">Se connecter</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Admin app ============ -->
+    <section id="adminApp" class="section" hidden aria-label="Console de vérification">
+      <div class="container">
+        <div class="sec-head" data-reveal>
+          <h1 class="sec-head__title">Transactions à vérifier</h1>
+          <span id="whoAmI" style="display:block;margin-top:10px;font-size:13px;color:var(--ink-3)"></span>
+        </div>
+
+        <div class="stats" data-reveal style="margin-bottom:32px">
+          <div class="card stat">
+            <div class="stat__num" id="statTotal">0</div>
+            <div class="stat__lbl">Transactions</div>
+          </div>
+          <div class="card stat">
+            <div class="stat__num" id="statPending">0</div>
+            <div class="stat__lbl">En attente</div>
+          </div>
+          <div class="card stat">
+            <div class="stat__num" style="color:var(--success)" id="statOk">0</div>
+            <div class="stat__lbl">Validées</div>
+          </div>
+          <div class="card stat">
+            <div class="stat__num" style="color:var(--danger)" id="statRej">0</div>
+            <div class="stat__lbl">Rejetées</div>
+          </div>
+        </div>
+
+        <div class="panel" data-reveal style="max-width:none; padding:0; overflow:auto; max-height:520px; scrollbar-width:thin">
+          <table class="tx-table">
+            <caption class="sr-only">Liste des transactions de paiement ACNU</caption>
+            <thead>
+              <tr>
+                <th scope="col">Transaction</th>
+                <th scope="col">Déclarant</th>
+                <th scope="col">Billet</th>
+                <th scope="col">Montant</th>
+                <th scope="col">Preuve</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Décision</th>
+              </tr>
+            </thead>
+            <tbody id="txRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Proof lightbox ============ -->
+  <div id="proofLightbox" class="lightbox" hidden>
+    <button type="button" class="lightbox__close" id="proofLightboxClose" aria-label="Fermer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <img id="proofLightboxImg" alt="Preuve de paiement">
+  </div>
+
+  <!-- ============ Transaction detail modal ============ -->
+  <div id="txModal" class="modal" hidden>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="txModalTitle">
+      <button type="button" class="lightbox__close" id="txModalClose" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+
+      <h3 id="txModalTitle" class="modal__title">Détails de la transaction</h3>
+      <p class="modal__id" id="txModalId"></p>
+
+      <div class="modal__grid">
+        <div class="modal__cell">
+          <span class="modal__lbl">Déclarant</span>
+          <b id="txModalName">—</b><br>
+          <small id="txModalContact"></small>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Billet</span>
+          <b id="txModalTier">—</b>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Montant</span>
+          <b id="txModalAmount" style="color:var(--gold-2)">—</b>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Paiement</span>
+          <b id="txModalMethod">—</b><br>
+          <small id="txModalRef"></small>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Statut</span>
+          <span id="txModalStatus"></span>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Date</span>
+          <b id="txModalDate">—</b>
+        </div>
+      </div>
+
+      <div class="modal__docs">
+        <span class="modal__lbl">Documents joints</span>
+        <a class="doc-card" id="txModalDoc" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>
+          <span id="txModalDocLabel">—</span>
+        </a>
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn--sm btn--ok" type="button" id="txModalApprove">Approuver</button>
+        <button class="btn btn--sm btn--no" type="button" id="txModalReject">Rejeter</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js" defer></script>
+  <script src="js/firebase-config.js" defer></script>
+  <script src="js/firebase.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+</html>

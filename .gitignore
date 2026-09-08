@@ -1,0 +1,16 @@
+node_modules/
+
+# Firebase Admin SDK service account — SECRET. Never deploy or commit.
+# Grants admin-level access to the Firebase project.
+service-account.json
+*.service-account.json
+credentials*.json
+
+# Environment files (may hold secrets)
+*.env
+.env
+.env.*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

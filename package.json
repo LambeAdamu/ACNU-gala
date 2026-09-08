@@ -1,0 +1,16 @@
+{
+  "name": "acnu-gala-admin-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server-side admin scripts (Firebase Admin SDK). NEVER used by the browser.",
+  "type": "commonjs",
+  "scripts": {
+    "create-admin": "node admin-create-user.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.29.0"
+  }
+}

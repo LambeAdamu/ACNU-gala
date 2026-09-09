@@ -288,14 +288,17 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spin" aria-hidden="true"></span> Envoi en cours…';
 
-    // Upload the proof to Firebase Storage so the admin can actually view it.
+    // Upload the proof to the Postgres-backed API so the admin can view it.
     async function attachProof() {
-      if (!proofFile || !firStorage) return "";
+      if (!proofFile) return "";
       try {
-        const safeName = proofFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const ref = firStorage.ref("proofs/" + tx.id + "/" + safeName);
-        const snap = await ref.put(proofFile);
-        return await snap.ref.getDownloadURL();
+        const fd = new FormData();
+        fd.append("transactionId", tx.id);
+        fd.append("proof", proofFile);
+        const res = await fetch("/api/upload-proof", { method: "POST", body: fd });
+        if (!res.ok) return "";
+        const data = await res.json();
+        return (data && data.url) || "";
       } catch (e) {
         return "";
       }

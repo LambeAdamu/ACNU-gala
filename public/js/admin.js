@@ -136,14 +136,16 @@
     }
 
     tab.innerHTML = list
-      .map((t) => `<tr>
+      .map((t) => {
+        const proofSrc = t.proof && t.proofUrl ? "/api/proof/" + encodeURIComponent(t.id) : "";
+        return `<tr>
         <td><b>${t.id}</b><br><small style="color:var(--ink-3)">${FMT.time(t.createdAt)}</small></td>
         <td>${t.name}<br><small style="color:var(--ink-3)">${t.email} · ${t.tel}</small></td>
         <td><small>${tierLabel[t.tier] || "—"}</small></td>
         <td><b style="color:var(--gold-2);white-space:nowrap">${FMT.money(t.amount)}</b><br>
           <small style="color:var(--ink-3)">${methodLabel[t.payMethod] || t.payMethod || "—"} · ${t.payDate || "—"}<br>Réf : ${t.ref || t.paynum}</small></td>
-        <td>${t.proofUrl
-          ? `<img class="tx-proof" src="${t.proofUrl}" alt="Preuve — ${t.id}" title="Cliquer pour agrandir" data-proof-url="${t.proofUrl}">`
+        <td>${proofSrc
+          ? `<img class="tx-proof" src="${proofSrc}" alt="Preuve — ${t.id}" title="Cliquer pour agrandir" data-proof-url="${proofSrc}">`
           : `<small title="${t.proof || ''}">${t.proof ? t.proof.slice(0, 22) + (t.proof.length > 22 ? "…" : "") : "—"}</small>`}</td>
         <td>${pill(t.status)}</td>
         <td>${
@@ -158,7 +160,8 @@
                  <small style="color:var(--ink-3)">${t.decidedBy} · ${t.decidedAt ? FMT.time(t.decidedAt) : ""}</small>
                </div>`
         }</td>
-      </tr>`)
+      </tr>`;
+      })
       .join("");
   }
 
@@ -209,12 +212,13 @@
     const doc = document.getElementById("txModalDoc");
     const docLabel = document.getElementById("txModalDocLabel");
     const proofName = t.proof || "preuve";
-    if (t.proofUrl && proofName !== "preuve") {
-      doc.href = t.proofUrl;
+    const docUrl = t.proof && t.proofUrl ? "/api/proof/" + encodeURIComponent(t.id) : "";
+    if (docUrl && proofName !== "preuve") {
+      doc.href = docUrl;
       doc.classList.remove("doc-card--disabled");
       docLabel.textContent = `${proofName} · Preuve de paiement${fileType(proofName) ? " · " + fileType(proofName) : ""}`;
-    } else if (t.proofUrl) {
-      doc.href = t.proofUrl;
+    } else if (docUrl) {
+      doc.href = docUrl;
       doc.classList.remove("doc-card--disabled");
       docLabel.textContent = "Document joint · Preuve de paiement";
     } else {

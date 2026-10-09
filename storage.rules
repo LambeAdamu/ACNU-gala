@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Proofs uploaded by (anonymous) ticket buyers on the public payment form.
+    // Writes are restricted to this folder only, with the same size/type limits
+    // the client enforces. Reads stay public so admins can view the proof.
+    match /proofs/{transactionId}/{fileName} {
+      allow read: if true;
+      allow write:
+        if request.resource.size <= 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpe?g|webp)|application/pdf');
+    }
+
+    // Deny access everywhere else on the bucket.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

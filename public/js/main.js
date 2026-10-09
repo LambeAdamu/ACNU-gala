@@ -164,35 +164,9 @@ function initReveal() {
 }
 
 /* ------------------------------------------------------------------
- * FAQ accordion
- * ------------------------------------------------------------------ */
-function initFaq() {
-  document.querySelectorAll(".faq__item").forEach((item) => {
-    const q = item.querySelector(".faq__q");
-    const a = item.querySelector(".faq__a");
-    if (!q || !a) return;
-    q.addEventListener("click", () => {
-      const open = item.getAttribute("data-open") === "true";
-      if (open) {
-        item.setAttribute("data-open", "false");
-        a.style.maxHeight = "0px";
-        q.setAttribute("aria-expanded", "false");
-      } else {
-        item.setAttribute("data-open", "true");
-        a.style.maxHeight = a.scrollHeight + "px";
-        q.setAttribute("aria-expanded", "true");
-      }
-    });
-    q.setAttribute("aria-expanded", item.getAttribute("data-open") === "true");
-    if (item.getAttribute("data-open") === "true") {
-      a.style.maxHeight = a.scrollHeight + "px";
-    }
-  });
-}
-
-/* ------------------------------------------------------------------
  * Hash router: three views (accueil · a-propos · billets)
- * Legacy anchors are mapped so old links keep working.
+ * Legacy anchors (#paiement, #prix, #organisateur, #tarifs,
+ * #presentation) are mapped so old links keep working.
  * ------------------------------------------------------------------ */
 function initRouter() {
   const order = ["accueil", "apropos", "billets"];
@@ -201,6 +175,12 @@ function initRouter() {
     apropos: document.getElementById("view-apropos"),
     billets: document.getElementById("view-billets"),
   };
+  const titles = {
+    accueil: "Accueil · Gala &amp; Awards 2027 · ACNU",
+    apropos: "À propos · Gala &amp; Awards 2027 · ACNU",
+    billets: "Payer des billets · Gala &amp; Awards 2027 · ACNU",
+  };
+  let currentView = null;
 
   function parse() {
     const raw = (location.hash || "").replace(/^#\/?/, "").split("?")[0];
@@ -213,9 +193,6 @@ function initRouter() {
         return { view: "billets" };
       case "prix":
         return { view: "apropos", scrollId: "prix" };
-      case "partenaires":
-      case "contact":
-      case "faq":
       case "organisateur":
       case "tarifs":
       case "presentation":
@@ -234,22 +211,47 @@ function initRouter() {
     });
   }
 
+  function closeMenu() {
+    const nav = document.getElementById("nav");
+    const toggle = document.getElementById("navToggle");
+    if (nav && nav.classList.contains("is-open")) {
+      nav.classList.remove("is-open");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  function focusHeading(view) {
+    const viewEl = views[view];
+    if (!viewEl) return;
+    const heading = viewEl.querySelector("h1, h2, h3");
+    if (!heading) return;
+    heading.setAttribute("tabindex", "-1");
+    heading.focus({ preventScroll: true });
+  }
+
   function render() {
     const { view, scrollId } = parse();
     order.forEach((k) => {
       if (views[k]) views[k].hidden = k !== view;
     });
     setActive(view);
+    closeMenu();
 
     const smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     if (scrollId) {
       const el = document.getElementById(scrollId);
       if (el) {
         requestAnimationFrame(() => el.scrollIntoView({ behavior: smooth, block: "start" }));
-        return;
       }
+    } else {
+      window.scrollTo({ top: 0, behavior: "auto" });
     }
-    window.scrollTo({ top: 0, behavior: "auto" });
+
+    if (currentView !== view) {
+      document.title = titles[view] || titles.accueil;
+      focusHeading(view);
+      currentView = view;
+    }
   }
 
   window.addEventListener("hashchange", render);
@@ -292,7 +294,6 @@ function initMarquee() {
 document.addEventListener("DOMContentLoaded", () => {
   initHeader();
   initReveal();
-  initFaq();
   initMarquee();
   initRouter();
 });

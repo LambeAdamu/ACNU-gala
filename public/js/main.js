@@ -191,39 +191,108 @@ function initFaq() {
 }
 
 /* ------------------------------------------------------------------
- * Payment section: hidden until a [data-pay-cta] link reveals it
+ * Hash router: three views (accueil · a-propos · billets)
+ * Legacy anchors are mapped so old links keep working.
  * ------------------------------------------------------------------ */
-function initPaiement() {
-  const pay = document.getElementById("paiement");
-  if (!pay) return;
-
-  const reveal = (e) => {
-    const link = e.target.closest("[data-pay-cta]");
-    if (!link) return;
-    if (pay.hidden) {
-      e.preventDefault();
-      revealPay();
-    }
+function initRouter() {
+  const order = ["accueil", "apropos", "billets"];
+  const views = {
+    accueil: document.getElementById("view-accueil"),
+    apropos: document.getElementById("view-apropos"),
+    billets: document.getElementById("view-billets"),
   };
 
-  function revealPay() {
-    if (!pay.hidden) return;
-    pay.hidden = false;
-    requestAnimationFrame(() => {
-      const revealEls = pay.querySelectorAll("[data-reveal]");
-      revealEls.forEach((el) => el.classList.add("is-in"));
-      pay.scrollIntoView({ behavior: "smooth", block: "start" });
+  function parse() {
+    const raw = (location.hash || "").replace(/^#\/?/, "").split("?")[0];
+    switch (raw) {
+      case "a-propos":
+      case "apropos":
+        return { view: "apropos" };
+      case "billets":
+      case "paiement":
+        return { view: "billets" };
+      case "prix":
+        return { view: "apropos", scrollId: "prix" };
+      case "partenaires":
+      case "contact":
+      case "faq":
+      case "organisateur":
+      case "tarifs":
+      case "presentation":
+        return { view: "accueil", scrollId: raw };
+      default:
+        return { view: "accueil" };
+    }
+  }
+
+  function setActive(view) {
+    document.querySelectorAll("[data-route]").forEach((a) => {
+      const on = a.getAttribute("data-route") === view;
+      a.classList.toggle("is-active", on);
+      if (on) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
     });
   }
 
-  if (window.location.hash === "#paiement") revealPay();
+  function render() {
+    const { view, scrollId } = parse();
+    order.forEach((k) => {
+      if (views[k]) views[k].hidden = k !== view;
+    });
+    setActive(view);
 
-  document.addEventListener("click", reveal);
+    const smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    if (scrollId) {
+      const el = document.getElementById(scrollId);
+      if (el) {
+        requestAnimationFrame(() => el.scrollIntoView({ behavior: smooth, block: "start" }));
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  window.addEventListener("hashchange", render);
+  render();
+}
+
+/* ------------------------------------------------------------------
+ * Lauréats marquee (data-only; empty window.GALA_WINNERS by default)
+ * ------------------------------------------------------------------ */
+function initMarquee() {
+  const track = document.querySelector("[data-marquee-track]");
+  const empty = document.querySelector("[data-marquee-empty]");
+  if (!track) return;
+
+  const list = Array.isArray(window.GALA_WINNERS) ? window.GALA_WINNERS : [];
+  if (!list.length) {
+    track.hidden = true;
+    return;
+  }
+
+  const build = () =>
+    list
+      .map((w) => {
+        const name = String(w.name || "").trim();
+        const award = String(w.award || "").trim();
+        const edition = String(w.edition || "").trim();
+        return (
+          '<li class="marquee__item">' +
+          (name ? "<b>" + name + "</b>" : "") +
+          (award ? "<span>" + award + "</span>" : "") +
+          (edition ? "<small>" + edition + "</small>" : "") +
+          "</li>"
+        );
+      })
+      .join("");
+  track.innerHTML = build() + build();
+  if (empty) empty.hidden = true;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   initHeader();
   initReveal();
   initFaq();
-  initPaiement();
+  initMarquee();
+  initRouter();
 });

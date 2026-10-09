@@ -176,9 +176,9 @@ function initRouter() {
     billets: document.getElementById("view-billets"),
   };
   const titles = {
-    accueil: "Accueil · Gala &amp; Awards 2027 · ACNU",
-    apropos: "À propos · Gala &amp; Awards 2027 · ACNU",
-    billets: "Payer des billets · Gala &amp; Awards 2027 · ACNU",
+    accueil: "Accueil \u00b7 Gala & Awards 2027 \u00b7 ACNU",
+    apropos: "\u00c0 propos \u00b7 Gala & Awards 2027 \u00b7 ACNU",
+    billets: "Payer des billets \u00b7 Gala & Awards 2027 \u00b7 ACNU",
   };
   let currentView = null;
 

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Gala &amp; Awards 2027 — 3e édition. Célébrer l'excellence, inspirer la jeunesse, façonner les leaders de demain. Par l'Association Camerounaise pour les Nations Unies (ACNU).">
-  <title>Gala &amp; Awards 2027 — ACNU · Célébrer l'excellence</title>
+  <meta name="description" content="Gala &amp; Awards 2027 · 3e édition. Célébrer l'excellence, inspirer la jeunesse, façonner les leaders de demain. Par l'Association Camerounaise pour les Nations Unies (ACNU).">
+  <title>Gala &amp; Awards 2027 · ACNU · Célébrer l'excellence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
   <!-- ============ Header ============ -->
   <header class="header">
     <div class="container header__inner">
-      <a class="brand" href="index.html" aria-label="ACNU Gala &amp; Awards 2027 — accueil">
+      <a class="brand" href="#/accueil" aria-label="ACNU Gala &amp; Awards 2027 · accueil">
         <span class="brand__mark" aria-hidden="true">
           <img src="assets/images/acnu-logo.png" alt="Logo ACNU" width="38" height="38" style="width:100%;height:100%;object-fit:cover">
         </span>
@@ -28,13 +28,11 @@
 
       <nav id="nav" class="nav" aria-label="Navigation principale">
         <ul class="nav__links">
-          <li><a class="nav__link" href="#apropos">Présentation</a></li>
-          <li><a class="nav__link" href="#prix">Prix &amp; distinctions</a></li>
-          <li><a class="nav__link" href="#partenaires">Partenariats</a></li>
-          <li><a class="nav__link" href="#contact">Contact</a></li>
+          <li><a class="nav__link" data-route="accueil" href="#/accueil" data-label-en="Home">Accueil</a></li>
+          <li><a class="nav__link" data-route="apropos" href="#/a-propos" data-label-en="About">À propos</a></li>
         </ul>
         <div class="nav__actions">
-          <a class="btn btn--sm" href="#paiement" data-pay-cta>Payer des billets</a>
+          <a class="btn btn--sm" data-route="billets" href="#/billets" data-pay-cta data-label-en="Pay for tickets">Payer des billets</a>
         </div>
       </nav>
 
@@ -46,49 +44,41 @@
   </header>
 
   <main id="main">
-    <!-- ============ Hero ============ -->
-    <section class="hero" aria-label="Introduction">
-      <div class="moon" aria-hidden="true"></div>
+    <div class="view" id="view-accueil" data-view="accueil">
+
+    <!-- ============ Hero (event convention) ============ -->
+    <section class="hero hero--event" aria-label="Introduction">
+      <div class="hero__media" data-hero-media data-video-src="" aria-hidden="true"></div>
 
       <div class="container hero__grid">
         <div class="hero__copy">
-          <p class="kicker">3e édition · Gala &amp; Awards 2027 · Douala</p>
-          <h1 class="hero__title">Célébrer <em>l'excellence.</em><br>Inspirer la jeunesse.</h1>
+          <p class="kicker">3e édition · Gala &amp; Awards 2027</p>
+          <h1 class="hero__title">Célébrer l'excellence. Inspirer la jeunesse. <br>Façonner les leaders de demain.</h1>
+          <p class="hero__sub">Le rendez-vous annuel qui récompense les jeunes talents du Cameroun et crée des ponts vers l'avenir.</p>
+
+          <ul class="hero__facts" aria-label="Informations clés">
+            <li class="hero__fact">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
+              <span><b>Organisateur</b>ACNU</span>
+            </li>
+            <li class="hero__fact">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span><b>Lieu</b>Douala, Cameroun</span>
+            </li>
+            <li class="hero__fact">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 21v-8h6v8"/></svg>
+              <span><b>Billets</b>À partir de 15 000 FCFA</span>
+            </li>
+          </ul>
 
           <div class="hero__actions">
-            <a class="btn" href="#partenaires">
-              Devenir partenaire
+            <a class="btn" href="#/billets" data-pay-cta>
+              Acheter mes billets
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <a class="btn btn--ghost" href="#paiement" data-pay-cta>Payer / Soumettre en ligne</a>
+            <a class="btn btn--ghost" href="#partenaires">Devenir partenaire</a>
           </div>
-
         </div>
-
-        <aside class="edition-card" aria-label="Information clés de l'édition">
-          <div class="edition-card__top">
-            <span class="edition-card__edition">III</span>
-            <span class="edition-card__label">Édition du<br>Gala &amp; Awards<br>2027</span>
-          </div>
-          <div class="edition-card__meta">
-            <div class="meta-chip">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg>
-              <span><b>30 septembre 2026</b>Clôture des partenariats</span>
-            </div>
-            <div class="meta-chip">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span><b>Douala</b>Cameroun</span>
-            </div>
-            <div class="meta-chip">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-              <span><b>6 catégories</b>de prix &amp; distinctions</span>
-            </div>
-            <div class="meta-chip">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-              <span><b>Jeunes leaders</b>élèves, étudiants &amp; partenaires</span>
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
 
@@ -109,13 +99,13 @@
         </span>
         <span class="trust-strip__item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-          Depuis 2014 — membre reconnu des Nations Unies
+          Depuis 2014 · membre reconnu des Nations Unies
         </span>
       </div>
     </div>
 
     <!-- ============ Présentation ============ -->
-    <section class="section" id="apropos" aria-label="Présentation">
+    <section class="section" id="presentation" aria-label="Présentation">
       <div class="container">
         <div class="sec-head" data-reveal>
           <p class="kicker">Présentation générale</p>
@@ -147,89 +137,66 @@
       </div>
     </section>
 
-    <!-- ============ Prix & distinctions ============ -->
-    <section class="section" id="prix" aria-label="Prix et distinctions">
+    <!-- ============ Mot des organisateurs ============ -->
+    <section class="section" id="organisateur" aria-label="Mot des organisateurs">
       <div class="container">
         <div class="sec-head" data-reveal>
-          <p class="kicker">Featured · Prix &amp; distinctions 2027</p>
-          <h2 class="sec-head__title">Les catégories à l'honneur cette année</h2>
-          <p class="sec-head__lede">
-            Six prix majeurs valorisent le mérite académique, le leadership et l'engagement citoyen.
-            Chaque catégorie peut être <strong>parrainée par un partenaire</strong> pour y associer son image.
-          </p>
+          <p class="kicker">Le mot des organisateurs</p>
+          <h2 class="sec-head__title">Célébrer le mérite, ouvrir des chemins</h2>
         </div>
 
-        <div class="grid grid--6">
-          <article class="card listing" data-reveal>
-            <div class="listing__head">
-              <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
-                Mérite
-              </span>
+        <figure class="card organisateur" data-reveal>
+          <blockquote class="organisateur__quote">
+            <p>Le Gala &amp; Awards est né d'une conviction : la jeunesse africaine est appelée à jouer un rôle stratégique dans le développement du continent. Chaque édition rassemble institutions, médias, parents et jeunes talents pour célébrer le mérite académique, le leadership et l'engagement citoyen.</p>
+            <p>Nous croyons que la reconnaissance nourrit l'ambition, et que l'ambition, bien accompagnée, devient impact. Ce rendez-vous se veut un catalyseur : un pont entre éducation, leadership et opportunités réelles. À travers plusieurs catégories de prix, nous mettons en lumière des parcours qui inspirent et ouvrent la voie à toute une génération.</p>
+            <p>Notre objectif est clair : faire du Gala &amp; Awards une référence nationale et internationale dans la promotion des jeunes talents. Merci à celles et ceux qui rendent cette célébration possible.</p>
+          </blockquote>
+          <figcaption class="organisateur__sign">
+            <b>L'équipe d'organisation ACNU</b>
+            <span class="organisateur__draft">Texte provisoire à valider</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ Billets & tarifs ============ -->
+    <section class="section" id="tarifs" aria-label="Billets et tarifs">
+      <div class="container">
+        <div class="sec-head" data-reveal>
+          <p class="kicker">Billetterie</p>
+          <h2 class="sec-head__title">Choisissez votre place</h2>
+          <p class="sec-head__lede">Trois catégories de billets pour vivre la cérémonie. Places limitées.</p>
+        </div>
+
+        <div class="tarifs">
+          <article class="card tarif" data-reveal>
+            <p class="tarif__name">Classic</p>
+            <h3 class="tarif__title">Billet Classic</h3>
+            <p class="tarif__price">15 000 <small>FCFA</small></p>
+            <p class="tarif__meta">Disponibilité : jusqu'à 160 places</p>
+            <div class="tarif__cta">
+              <a class="btn btn--ghost" href="#/billets" data-pay-cta>Payer des billets</a>
             </div>
-            <h3>Excellence Académique</h3>
-            <p class="listing__desc">Récompense le mérite scolaire et intellectuel des élèves et étudiants les plus brillants.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.08s">
-            <div class="listing__head">
-              <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
-                Égalité
-              </span>
+          <article class="card tarif tarif--featured" data-reveal style="--reveal-delay:.08s">
+            <p class="tarif__name">VIP</p>
+            <h3 class="tarif__title">Billet VIP</h3>
+            <p class="tarif__price">25 000 <small>FCFA</small></p>
+            <p class="tarif__meta">Disponibilité : jusqu'à 100 places</p>
+            <div class="tarif__cta">
+              <a class="btn" href="#/billets" data-pay-cta>Payer des billets</a>
             </div>
-            <h3>Excellence Féminine</h3>
-            <p class="listing__desc">Met en lumière les parcours féminins d'exception dans les études et le leadership.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.16s">
-            <div class="listing__head">
-              <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-                Influence
-              </span>
+          <article class="card tarif" data-reveal style="--reveal-delay:.16s">
+            <p class="tarif__name">Premium</p>
+            <h3 class="tarif__title">Billet Premium</h3>
+            <p class="tarif__price">300 000 <small>FCFA</small></p>
+            <p class="tarif__meta">Disponibilité : jusqu'à 5 places</p>
+            <div class="tarif__cta">
+              <a class="btn btn--ghost" href="#/billets" data-pay-cta>Payer des billets</a>
             </div>
-            <h3>Leadership</h3>
-            <p class="listing__desc">Distingue les jeunes qui incarnent l'impact, la prise de décision et l'exemple.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
-          </article>
-
-          <article class="card listing" data-reveal style="--reveal-delay:.24s">
-            <div class="listing__head">
-              <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.2L12 16.6l-6.3 4.5 2.3-7.2-6-4.5h7.6L12 2z"/></svg>
-                Impact
-              </span>
-            </div>
-            <h3>Engagement Citoyen</h3>
-            <p class="listing__desc">Honore les jeunes engagés pour leur communauté, la paix et le développement.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
-          </article>
-
-          <article class="card listing" data-reveal style="--reveal-delay:.32s">
-            <div class="listing__head">
-              <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
-                À définir
-              </span>
-            </div>
-            <h3>Catégorie à définir</h3>
-            <p class="listing__desc">Description à venir — cette catégorie sera précisée par l'organisation.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
-          </article>
-
-          <article class="card listing" data-reveal style="--reveal-delay:.4s">
-            <div class="listing__head">
-              <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
-                À définir
-              </span>
-            </div>
-            <h3>Catégorie à définir</h3>
-            <p class="listing__desc">Description à venir — cette catégorie sera précisée par l'organisation.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
         </div>
       </div>
@@ -359,7 +326,7 @@
             <p class="kicker">Pourquoi nous rejoindre</p>
             <h2 class="sec-head__title" style="margin-bottom:24px">Investir dans les leaders de demain</h2>
             <p class="sec-head__lede">
-              « Aujourd'hui, les entreprises n'investissent plus uniquement dans des événements —
+              « Aujourd'hui, les entreprises n'investissent plus uniquement dans des événements,
               elles investissent dans des <strong>plateformes capables de créer de l'impact</strong>. »
             </p>
             <div class="grid grid--2" style="gap:10px; margin-top:24px;">
@@ -548,7 +515,7 @@
               </div>
               <div>
                 <h3>Cadre légal</h3>
-                <p>Récepissé N° 022/RDA/J12/SAAJP du 14 mai 2014 · Agrément MINEREX N° 000506 1/DIPL/D3/SDCD/ONG du 02 oct. 2014</p>
+                <p>Récépissé N° 022/RDA/J12/SAAJP du 14 mai 2014 · Agrément MINEREX N° 000506 1/DIPL/D3/SDCD/ONG du 02 oct. 2014</p>
               </div>
             </div>
           </div>
@@ -606,14 +573,138 @@
               <span class="faq__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
             </button>
             <div class="faq__a">
-              <div class="faq__a-inner">L'ACNU est déclarée par récepissé N° 022/RDA/J12/SAAJP du 14 mai 2014 et agréée par le Ministère des Relations Extérieures (MINEREX) depuis 2014 — 10 ans de reconnaissance institutionnelle et d'exécution éprouvée.</div>
+              <div class="faq__a-inner">L'ACNU est déclarée par récépissé N° 022/RDA/J12/SAAJP du 14 mai 2014 et agréée par le Ministère des Relations Extérieures (MINEREX) depuis 2014, soit 10 ans de reconnaissance institutionnelle et d'exécution éprouvée.</div>
             </div>
           </div>
         </div>
       </div>
     </section>
+    </div><!-- /#view-accueil -->
+
+    <div class="view" id="view-apropos" data-view="apropos" hidden>
+
+    <!-- ============ À propos ============ -->
+    <section class="section" aria-label="À propos">
+      <div class="container">
+        <div class="sec-head apropos-head" data-reveal>
+          <p class="kicker">À propos</p>
+          <h1 class="sec-head__title">Notre mission</h1>
+          <p class="apropos-lede">Faire du Gala &amp; Awards une référence nationale et internationale dans la promotion des jeunes talents, en créant un pont entre éducation, leadership et opportunités réelles.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Prix & distinctions ============ -->
+    <section class="section" id="prix" aria-label="Prix et distinctions">
+      <div class="container">
+        <div class="sec-head" data-reveal>
+          <p class="kicker">Prix &amp; distinctions 2027</p>
+          <h2 class="sec-head__title">Les catégories à l'honneur cette année</h2>
+          <p class="sec-head__lede">
+            Six prix majeurs valorisent le mérite académique, le leadership et l'engagement citoyen.
+            Chaque catégorie peut être <strong>parrainée par un partenaire</strong> pour y associer son image.
+          </p>
+        </div>
+
+        <div class="grid grid--6">
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Mérite
+              </span>
+            </div>
+            <h3>Excellence Académique</h3>
+            <p class="listing__desc">Récompense le mérite scolaire et intellectuel des élèves et étudiants les plus brillants.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+          </article>
+
+          <article class="card listing" data-reveal style="--reveal-delay:.08s">
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
+                Égalité
+              </span>
+            </div>
+            <h3>Excellence Féminine</h3>
+            <p class="listing__desc">Met en lumière les parcours féminins d'exception dans les études et le leadership.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+          </article>
+
+          <article class="card listing" data-reveal style="--reveal-delay:.16s">
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                Influence
+              </span>
+            </div>
+            <h3>Leadership</h3>
+            <p class="listing__desc">Distingue les jeunes qui incarnent l'impact, la prise de décision et l'exemple.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+          </article>
+
+          <article class="card listing" data-reveal style="--reveal-delay:.24s">
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.2L12 16.6l-6.3 4.5 2.3-7.2-6-4.5h7.6L12 2z"/></svg>
+                Impact
+              </span>
+            </div>
+            <h3>Engagement Citoyen</h3>
+            <p class="listing__desc">Honore les jeunes engagés pour leur communauté, la paix et le développement.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+          </article>
+
+          <article class="card listing" data-reveal style="--reveal-delay:.32s">
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
+                À définir
+              </span>
+            </div>
+            <h3>Catégorie à définir</h3>
+            <p class="listing__desc">Description à venir : cette catégorie sera précisée par l'organisation.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+          </article>
+
+          <article class="card listing" data-reveal style="--reveal-delay:.4s">
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
+                À définir
+              </span>
+            </div>
+            <h3>Catégorie à définir</h3>
+            <p class="listing__desc">Description à venir : cette catégorie sera précisée par l'organisation.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+          </article>
+        </div>
+
+        <div class="sec-head" data-reveal style="margin-top:40px; margin-bottom:0">
+          <p class="sec-head__lede">Vous souhaitez associer votre nom à une catégorie ? <a href="#contact">Parrainer une catégorie</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Lauréats (défilement) ============ -->
+    <section class="section" id="laureats" aria-label="Lauréats">
+      <div class="container">
+        <div class="sec-head" data-reveal>
+          <p class="kicker">Ils ont été distingués</p>
+          <h2 class="sec-head__title">Les lauréats</h2>
+        </div>
+      </div>
+      <div class="marquee" data-marquee>
+        <div class="marquee__track" data-marquee-track></div>
+        <p class="marquee-empty" data-marquee-empty>Les lauréats de cette édition seront annoncés prochainement.</p>
+      </div>
+    </section>
+
+    </div><!-- /#view-apropos -->
+
+    <div class="view" id="view-billets" data-view="billets" hidden>
     <!-- ============ Paiement / billetterie ============ -->
-    <section class="section" id="paiement" aria-label="Paiement en ligne" hidden>
+    <section class="section" id="paiement" aria-label="Paiement en ligne">
       <div class="container">
         <div class="sec-head sec-head--center" data-reveal>
           <p class="kicker">Plateforme de paiement ACNU</p>
@@ -774,6 +865,7 @@
         </div>
       </div>
     </section>
+    </div><!-- /#view-billets -->
   </main>
 
   <!-- ============ Footer ============ -->
@@ -781,7 +873,7 @@
     <div class="container">
       <div class="footer__grid">
         <div class="footer__brand">
-          <a class="brand" href="index.html" aria-label="ACNU Gala &amp; Awards 2027 — retour en haut">
+          <a class="brand" href="#/accueil" aria-label="ACNU Gala &amp; Awards 2027 · retour en haut">
             <span class="brand__mark" aria-hidden="true">
               <img src="assets/images/acnu-logo.png" alt="Logo ACNU" width="38" height="38" style="width:100%;height:100%;object-fit:cover">
             </span>
@@ -793,10 +885,11 @@
         <nav aria-label="Navigation pied de page">
           <h4>Navigation</h4>
           <ul class="footer__links">
-            <li><a href="#apropos">Présentation</a></li>
+            <li><a href="#/accueil">Accueil</a></li>
+            <li><a href="#/a-propos">À propos</a></li>
             <li><a href="#prix">Prix &amp; distinctions</a></li>
             <li><a href="#partenaires">Partenariats</a></li>
-            <li><a href="#paiement" data-pay-cta>Payer / Soumettre en ligne</a></li>
+            <li><a href="#/billets" data-pay-cta>Payer des billets</a></li>
             <li><a href="admin.html">Espace administrateur</a></li>
           </ul>
         </nav>
@@ -823,6 +916,8 @@
     </div>
   </footer>
 
+  <script src="data/winners.js" defer></script>
+  <script src="js/hero-media.js" defer></script>
   <script src="js/main.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>

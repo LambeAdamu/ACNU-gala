@@ -2044,3 +2044,199 @@ p {
   }
   [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* ============ Batch 2 · Vues, héro événementiel, organisateur, tarifs, marquee ============ */
+
+.view { display: block; }
+
+/* --- Hero événementiel --- */
+.hero--event {
+  display: flex;
+  align-items: center;
+  min-height: calc(100vh - var(--header-h));
+  padding-top: calc(var(--header-h) + clamp(24px, 5vw, 64px));
+}
+
+.hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 80% 10%, rgba(143, 98, 32, 0.35), transparent 60%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1));
+}
+
+.hero__media img,
+.hero__media video,
+.hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.42;
+}
+
+.hero--event .hero__grid { grid-template-columns: minmax(0, 1fr); }
+.hero__copy { position: relative; z-index: 1; max-width: 760px; }
+
+.hero__sub {
+  font-size: clamp(17px, 2vw, 20px);
+  color: var(--ink-2);
+  max-width: 56ch;
+  margin-bottom: 30px;
+}
+
+.hero__facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin: 0 0 36px;
+  padding: 0;
+}
+
+.hero__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+.hero__fact svg { width: 20px; height: 20px; color: var(--gold); flex: none; }
+
+.hero__fact b {
+  display: block;
+  color: var(--ink);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.hero--event .hero__actions { margin-bottom: 0; }
+
+.nav__link.is-active { color: var(--ink); }
+.nav__link.is-active::after { width: 100%; }
+.nav__actions .btn.is-active { box-shadow: inset 0 0 0 2px var(--line-gold); }
+
+/* --- Message de l'organisateur --- */
+.organisateur { max-width: 860px; }
+
+.organisateur__quote {
+  font-size: clamp(19px, 2.2vw, 23px);
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.organisateur__quote p + p { margin-top: 1.1em; }
+
+.organisateur__sign { margin-top: 26px; display: flex; flex-direction: column; gap: 4px; }
+.organisateur__sign b { font-family: var(--font-display); font-size: 20px; color: var(--ink); }
+.organisateur__draft {
+  color: var(--ink-3);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* --- Tarifs --- */
+.tarifs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  align-items: stretch;
+}
+
+.tarif {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tarif--featured {
+  border-color: var(--line-gold);
+  box-shadow: var(--shadow-card);
+}
+
+.tarif__name {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tarif__title { font-family: var(--font-display); font-size: 22px; margin: 0; }
+.tarif__price { font-size: 30px; color: var(--gold-2); font-weight: 700; }
+.tarif__price small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.tarif__meta { color: var(--ink-3); font-size: 14px; margin: 0; }
+.tarif__cta { margin-top: auto; }
+
+/* --- À propos --- */
+.apropos-head { max-width: 760px; }
+.apropos-lede {
+  font-size: clamp(18px, 2.1vw, 22px);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* --- Marquee lauréats --- */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee__track {
+  display: flex;
+  gap: 48px;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+}
+
+.marquee:hover .marquee__track,
+.marquee:focus-within .marquee__track { animation-play-state: paused; }
+
+.marquee__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.marquee__item b { color: var(--ink); font-family: var(--font-display); font-size: 20px; }
+.marquee__item small {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.marquee-empty { text-align: center; color: var(--ink-3); margin: 0; }
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 900px) {
+  .tarifs { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee__track { animation: none; }
+  .marquee { -webkit-mask-image: none; mask-image: none; }
+}

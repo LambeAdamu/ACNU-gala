@@ -11,6 +11,9 @@ credentials*.json
 .env
 .env.*
 
+# Owner source material (marketing docx, raw images) — never commit or deploy
+_source/
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

@@ -92,6 +92,23 @@ const Toast = {
  * ------------------------------------------------------------------ */
 function initHeader() {
   const header = document.querySelector(".header");
+  const toggle = document.getElementById("navToggle");
+  const nav = document.getElementById("nav");
+  const burger = document.querySelector(".site-header__burger");
+  const panel = document.getElementById("mobile-menu");
+
+  const closePanel = () => {
+    if (!panel) return;
+    panel.classList.remove("is-open");
+    if (burger) burger.setAttribute("aria-expanded", "false");
+  };
+
+  const openPanel = () => {
+    if (!panel) return;
+    panel.classList.add("is-open");
+    if (burger) burger.setAttribute("aria-expanded", "true");
+  };
+
   if (header) {
     const ON = 60;
     const OFF = 20;
@@ -102,6 +119,7 @@ function initHeader() {
         header.classList.add("is-scrolled");
       } else if (header.classList.contains("is-scrolled") && y < OFF) {
         header.classList.remove("is-scrolled");
+        closePanel();
       }
       ticking = false;
     };
@@ -118,8 +136,44 @@ function initHeader() {
     );
   }
 
-  const toggle = document.getElementById("navToggle");
-  const nav = document.getElementById("nav");
+  /* Mobile panel: built from the existing nav links (no duplicated markup). */
+  if (panel && nav) {
+    nav.querySelectorAll(".nav__links a").forEach((link) => {
+      const clone = link.cloneNode(true);
+      clone.removeAttribute("data-route");
+      clone.removeAttribute("aria-current");
+      clone.classList.remove("nav__link", "is-active");
+      panel.appendChild(clone);
+    });
+    panel.addEventListener("click", (e) => {
+      if (e.target.closest("a")) closePanel();
+    });
+  }
+
+  if (burger && panel) {
+    burger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (panel.classList.contains("is-open")) closePanel();
+      else openPanel();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && panel && panel.classList.contains("is-open")) {
+      closePanel();
+      if (burger) burger.focus();
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!panel || !panel.classList.contains("is-open")) return;
+    if (e.target.closest("#mobile-menu") || e.target.closest(".site-header__burger")) return;
+    closePanel();
+  });
+
+  window.addEventListener("hashchange", closePanel);
+
+  /* Legacy hamburger (hidden on mobile, kept for safety). */
   if (toggle && nav) {
     toggle.addEventListener("click", () => {
       const open = nav.classList.toggle("is-open");

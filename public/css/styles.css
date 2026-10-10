@@ -264,22 +264,12 @@ p {
 
 /* ============ Header / nav ============ */
 .header {
-  /* At the top of the page the header floats over the hero media (dark overlay):
-     text resolves to light colours; the scrolled state re-scopes these to ink. */
-  --ink: #f4efe5;
-  --ink-2: #e8e1d0;
-  --ink-3: #b9b3a4;
-  --gold: #d8a13e;
-  --gold-2: #f0c76b;
-  --gold-deep: #8f6220;
-  --line: rgba(255, 255, 255, 0.22);
-  --line-gold: rgba(216, 161, 62, 0.45);
   position: sticky;
   top: 0;
   z-index: 100;
   height: var(--header-h);
-  background: transparent;
-  border-bottom: 1px solid transparent;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--line);
 }
 
 .header--scrolled {
@@ -292,9 +282,7 @@ p {
   --gold-deep: #8f6220;
   --line: #e3e5ea;
   --line-gold: rgba(216, 161, 62, 0.45);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--bg-0);
   border-bottom: 1px solid var(--line);
 }
 
@@ -362,7 +350,7 @@ p {
   font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-2);
 }
 
 .nav {
@@ -401,7 +389,7 @@ p {
 .nav__link {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ink-2);
+  color: var(--ink);
   text-decoration: none;
   position: relative;
   padding: 6px 0;
@@ -419,7 +407,7 @@ p {
   transition: width 0.22s var(--ease);
 }
 
-.nav__link:hover { color: var(--ink); }
+.nav__link:hover { color: var(--blue); }
 .nav__link:hover::after { width: 100%; }
 
 .nav__toggle {
@@ -2052,10 +2040,10 @@ html {
     right: 0;
     z-index: 1000;
     height: var(--hdr-top-h);
-    background: transparent;
+    background: var(--bg-0);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border-bottom: 0;
+    border-bottom: 1px solid var(--line);
     transition: height var(--hdr-dur) var(--hdr-ease),
       background-color var(--hdr-dur) var(--hdr-ease),
       box-shadow var(--hdr-dur) var(--hdr-ease);
@@ -2077,7 +2065,7 @@ html {
     left: 8%;
     right: 8%;
     height: 1px;
-    background: var(--line-on-hero);
+    background: var(--line);
     transition: opacity var(--hdr-dur) var(--hdr-ease);
   }
 
@@ -2126,9 +2114,7 @@ html {
 
   .header.is-scrolled {
     height: var(--hdr-scrolled-h);
-    background: rgba(255, 255, 255, 0.92);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: var(--bg-0);
     border-bottom: 1px solid var(--line);
     box-shadow: var(--shadow-header);
   }
@@ -2178,10 +2164,10 @@ html {
     right: 0;
     z-index: 1000;
     height: var(--hdr-top-h);
-    background: transparent;
+    background: var(--bg-0);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border-bottom: 0;
+    border-bottom: 1px solid var(--line);
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     transition: height var(--hdr-dur) var(--hdr-ease),
@@ -2205,7 +2191,7 @@ html {
     left: 6%;
     right: 6%;
     height: 1px;
-    background: var(--line-on-hero);
+    background: var(--line);
     transition: opacity var(--hdr-dur) var(--hdr-ease);
   }
 
@@ -2287,9 +2273,7 @@ html {
   /* --- Scrolled state --- */
   .header.is-scrolled {
     height: var(--hdr-scrolled-h);
-    background: rgba(255, 255, 255, 0.92);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: var(--bg-0);
     border-bottom: 1px solid var(--line);
     box-shadow: var(--shadow-header-sm);
   }
@@ -2392,7 +2376,7 @@ html {
     min-height: 48px;
     padding: 0 4px;
     font-size: 16px;
-    color: var(--ink-2);
+    color: var(--ink);
     text-decoration: none;
     border-bottom: 1px solid var(--line);
   }

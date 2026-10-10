@@ -93,9 +93,29 @@ const Toast = {
 function initHeader() {
   const header = document.querySelector(".header");
   if (header) {
-    const onScroll = () => header.classList.toggle("header--scrolled", window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const ON = 60;
+    const OFF = 20;
+    let ticking = false;
+    const update = () => {
+      const y = window.scrollY;
+      if (!header.classList.contains("is-scrolled") && y > ON) {
+        header.classList.add("is-scrolled");
+      } else if (header.classList.contains("is-scrolled") && y < OFF) {
+        header.classList.remove("is-scrolled");
+      }
+      ticking = false;
+    };
+    update();
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true }
+    );
   }
 
   const toggle = document.getElementById("navToggle");

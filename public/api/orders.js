@@ -14,7 +14,13 @@ const { Pool } = pg;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+/* Admin allowlist. Configurable via the ADMIN_EMAILS env var (comma-separated);
+ * falls back to the historical default so nothing breaks if it is unset. */
 const ADMIN_EMAIL = "acnubureau.littoral@gmail.com";
+const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || ADMIN_EMAIL)
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 const TIERS = { premium: true, vip: true, classic: true };
 const STATUSES = { pending: true, approved: true, rejected: true };
 const PAY_METHODS = { momomo: true, orange: true };
@@ -103,8 +109,8 @@ async function verifyAdmin(request) {
     );
     if (!res.ok) return { error: "Authentification invalide.", status: 401 };
     const data = await res.json();
-    const email = (data.users && data.users[0] && data.users[0].email) || "";
-    if (email !== ADMIN_EMAIL) return { error: "Accès refusé.", status: 403 };
+    const email = ((data.users && data.users[0] && data.users[0].email) || "").trim();
+    if (!ADMIN_EMAILS.includes(email.toLowerCase())) return { error: "Accès refusé.", status: 403 };
     return { email };
   } catch (e) {
     console.error("orders token lookup error:", e);

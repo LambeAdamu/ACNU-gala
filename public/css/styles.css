@@ -1683,13 +1683,16 @@ p {
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--line);
     transform: translateY(-120%);
-    transition: transform 0.32s var(--ease);
+    visibility: hidden;
+    transition: transform 0.32s var(--ease), visibility 0s linear 0.32s;
     z-index: 95;
   }
-  body:has(.nav.is-open) .nav {
+  body:has(.nav.is-open) .nav,
+  .nav.is-open {
     transform: translateY(0);
+    visibility: visible;
+    transition: transform 0.32s var(--ease), visibility 0s;
   }
-  .nav.is-open { transform: translateY(0); }
   .nav__links { flex-direction: column; align-items: stretch; gap: 4px; }
   .nav__link { display: flex; align-items: center; min-height: 48px; padding: 12px 8px; font-size: 16px; }
   .hero__grid { grid-template-columns: 1fr; }

@@ -77,6 +77,12 @@ a:hover {
   border-radius: 4px;
 }
 
+/* Elements made focusable only for scripting (e.g. headings focused by the router) */
+[tabindex="-1"]:focus,
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 ::selection {
   background: rgba(216, 161, 62, 0.35);
   color: var(--ink);

@@ -11,6 +11,7 @@
   --ink: #0b0b0f;
   --ink-2: #47494f;
   --ink-3: #5c636e;
+  --menu-ink: var(--ink);
   --footer-bg: #0b0b0f;
 
   /* Gold — fills, borders and date blocks; text-on-light uses the deep golds */
@@ -264,12 +265,22 @@ p {
 
 /* ============ Header / nav ============ */
 .header {
+  /* At the top of the page the header floats over the hero media (dark overlay):
+     text resolves to light colours; the scrolled state re-scopes these to ink. */
+  --ink: #f4efe5;
+  --ink-2: #e8e1d0;
+  --ink-3: #b9b3a4;
+  --gold: #d8a13e;
+  --gold-2: #f0c76b;
+  --gold-deep: #8f6220;
+  --line: rgba(255, 255, 255, 0.22);
+  --line-gold: rgba(216, 161, 62, 0.45);
   position: sticky;
   top: 0;
   z-index: 100;
   height: var(--header-h);
-  background: var(--bg-0);
-  border-bottom: 1px solid var(--line);
+  background: transparent;
+  border-bottom: 1px solid transparent;
 }
 
 .header--scrolled {
@@ -282,7 +293,9 @@ p {
   --gold-deep: #8f6220;
   --line: #e3e5ea;
   --line-gold: rgba(216, 161, 62, 0.45);
-  background: var(--bg-0);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
 
@@ -350,7 +363,7 @@ p {
   font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--gold-2);
+  color: var(--gold);
 }
 
 .nav {
@@ -389,7 +402,7 @@ p {
 .nav__link {
   font-size: 14px;
   font-weight: 500;
-  color: var(--ink);
+  color: var(--menu-ink);
   text-decoration: none;
   position: relative;
   padding: 6px 0;
@@ -407,7 +420,7 @@ p {
   transition: width 0.22s var(--ease);
 }
 
-.nav__link:hover { color: var(--blue); }
+.nav__link:hover { color: var(--menu-ink); }
 .nav__link:hover::after { width: 100%; }
 
 .nav__toggle {
@@ -1882,7 +1895,7 @@ p {
 
 .hero--event .hero__actions { margin-bottom: 0; }
 
-.nav__link.is-active { color: var(--ink); }
+.nav__link.is-active { color: var(--menu-ink); }
 .nav__link.is-active::after { width: 100%; }
 
 /* --- Message de l'organisateur --- */
@@ -2040,10 +2053,10 @@ html {
     right: 0;
     z-index: 1000;
     height: var(--hdr-top-h);
-    background: var(--bg-0);
+    background: transparent;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 0;
     transition: height var(--hdr-dur) var(--hdr-ease),
       background-color var(--hdr-dur) var(--hdr-ease),
       box-shadow var(--hdr-dur) var(--hdr-ease);
@@ -2065,7 +2078,7 @@ html {
     left: 8%;
     right: 8%;
     height: 1px;
-    background: var(--line);
+    background: var(--menu-ink);
     transition: opacity var(--hdr-dur) var(--hdr-ease);
   }
 
@@ -2114,7 +2127,9 @@ html {
 
   .header.is-scrolled {
     height: var(--hdr-scrolled-h);
-    background: var(--bg-0);
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
     box-shadow: var(--shadow-header);
   }
@@ -2164,10 +2179,10 @@ html {
     right: 0;
     z-index: 1000;
     height: var(--hdr-top-h);
-    background: var(--bg-0);
+    background: transparent;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 0;
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
     transition: height var(--hdr-dur) var(--hdr-ease),
@@ -2191,7 +2206,7 @@ html {
     left: 6%;
     right: 6%;
     height: 1px;
-    background: var(--line);
+    background: var(--menu-ink);
     transition: opacity var(--hdr-dur) var(--hdr-ease);
   }
 
@@ -2273,7 +2288,9 @@ html {
   /* --- Scrolled state --- */
   .header.is-scrolled {
     height: var(--hdr-scrolled-h);
-    background: var(--bg-0);
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
     box-shadow: var(--shadow-header-sm);
   }
@@ -2376,13 +2393,13 @@ html {
     min-height: 48px;
     padding: 0 4px;
     font-size: 16px;
-    color: var(--ink);
+    color: var(--menu-ink);
     text-decoration: none;
     border-bottom: 1px solid var(--line);
   }
 
   .site-header__panel a:last-child { border-bottom: 0; }
-  .site-header__panel a:hover { color: var(--ink); }
+  .site-header__panel a:hover { color: var(--menu-ink); }
 
   .hero--event,
   #view-apropos > .section:first-of-type,

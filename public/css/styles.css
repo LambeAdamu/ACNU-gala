@@ -1329,6 +1329,39 @@ p {
 
 .pay-method .ref button svg { width: 15px; height: 15px; }
 
+.pay-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pay-method {
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.pay-method h4 input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gold-2);
+  cursor: pointer;
+}
+
+.pay-method.is-selected,
+.pay-method:has(input[type="radio"]:checked) {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+.pay-method__name { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+.pay-method__name b { color: var(--ink); }
+
+@media (max-width: 560px) {
+  .pay-methods { grid-template-columns: 1fr; }
+}
+
 /* proof upload */
 .upload {
   border: 1.5px dashed var(--blue);

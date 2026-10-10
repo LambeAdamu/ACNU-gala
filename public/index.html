@@ -637,27 +637,46 @@
                 <div id="participantsList"></div>
               </div>
 
-              <!-- ============ 4. Paiement (MoMo) ============ -->
+              <!-- ============ 4. Paiement ============ -->
               <div class="form-section">
                 <h3 class="form-section__title">4 · Paiement</h3>
-                <div class="pay-method">
-                  <h4>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                    Mobile Money (MoMo)
-                  </h4>
-                  <p>Effectuez un virement MoMo vers ce numéro, puis joignez la preuve ci-dessous.</p>
-                  <div class="ref">
-                    <span id="payRefMoMo">695 68 40 40</span>
-                    <button type="button" data-copy="payRefMoMo" aria-label="Copier le numéro MoMo">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                      Copier
-                    </button>
-                  </div>
-                  <p style="margin-top:10px;font-size:14px">Nom : <b>Lambe Emmanuel</b></p>
-                  <div class="pay-total">
-                    <span>Total à payer</span>
-                    <b id="payTotal">0 FCFA</b>
-                  </div>
+                <p class="form-section__hint">Choisissez votre moyen de paiement, effectuez le virement vers le numéro affiché, puis joignez la preuve ci-dessous.</p>
+                <div class="pay-methods" role="radiogroup" aria-label="Moyen de paiement">
+                  <label class="pay-method is-selected">
+                    <h4>
+                      <input type="radio" name="payMethod" value="momomo" checked>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                      Mobile Money (MoMo)
+                    </h4>
+                    <div class="ref">
+                      <span id="payRefMoMo" data-raw="678613421">678 61 34 21</span>
+                      <button type="button" data-copy="payRefMoMo" aria-label="Copier le numéro Mobile Money">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        Copier
+                      </button>
+                    </div>
+                    <p class="pay-method__name">Nom : <b>BUZUAH STELMON-LYDIA</b></p>
+                  </label>
+
+                  <label class="pay-method">
+                    <h4>
+                      <input type="radio" name="payMethod" value="orange">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M11 18h2"/></svg>
+                      Orange Money (OM)
+                    </h4>
+                    <div class="ref">
+                      <span id="payRefOM" data-raw="686410795">686 41 07 95</span>
+                      <button type="button" data-copy="payRefOM" aria-label="Copier le numéro Orange Money">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        Copier
+                      </button>
+                    </div>
+                    <p class="pay-method__name">Nom : <b>Virginie Florence</b></p>
+                  </label>
+                </div>
+                <div class="pay-total">
+                  <span>Total à payer</span>
+                  <b id="payTotal">0 FCFA</b>
                 </div>
               </div>
 

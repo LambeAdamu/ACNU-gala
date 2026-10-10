@@ -38,7 +38,7 @@
   const rej = document.getElementById("statRej");
 
   const tierLabel = { premium: "Premium", vip: "VIP", classic: "Classique" };
-  const methodLabel = { mtn: "MoMo MTN", orange: "MoMo Orange", virement: "Virement / Agence", momomo: "Mobile Money (MoMo)" };
+  const methodLabel = { mtn: "MoMo MTN", orange: "Orange Money (OM)", virement: "Virement / Agence", momomo: "Mobile Money (MoMo)" };
   let currentList = [];
   let currentUser = null;
   let refreshTimer = null;

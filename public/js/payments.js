@@ -277,6 +277,7 @@
       proof: proofFile.name,
       proofSize: proofFile.size,
       proofUrl: "",
+      proofPublicId: "",
       createdAt: iso,
       status: "pending",
       decidedBy: "",
@@ -288,41 +289,75 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spin" aria-hidden="true"></span> Envoi en cours…';
 
-    // Upload the proof to the Postgres-backed API so the admin can view it.
-    async function attachProof() {
-      if (!proofFile) return "";
-      try {
-        const fd = new FormData();
-        fd.append("transactionId", tx.id);
-        fd.append("proof", proofFile);
-        const res = await fetch("/api/upload-proof", { method: "POST", body: fd });
-        if (!res.ok) return "";
-        const data = await res.json();
-        return (data && data.url) || "";
-      } catch (e) {
-        return "";
-      }
-    }
-
     (async () => {
-      await new Promise((r) => setTimeout(r, 900));
-      tx.proofUrl = await attachProof();
-      if (!tx.proofUrl) {
-        Toast.show("Preuve non téléversée — seule la référence a été enregistrée.", "err");
+      let proof = { url: "", publicId: "" };
+      try {
+        proof = await uploadToCloudinary(proofFile);
+      } catch (e) {
+        console.error("proof upload failed:", e);
+        Toast.show("Preuve non téléversée — seule la référence a été enregistrée (preuve manquante).", "err");
       }
-      TxApi.add(tx).then((saved) => {
-        btn.disabled = false;
-        btn.innerHTML = orig;
-        if (saved) {
-          box.hidden = true;
-          done.hidden = false;
-          done.scrollIntoView({ behavior: "smooth", block: "center" });
-        } else {
-          Toast.show("Impossible d'enregistrer (stockage indisponible). Réessayez.", "err");
-        }
-      });
+      tx.proofUrl = proof.url;
+      tx.proofPublicId = proof.publicId;
+
+      const saved = await saveOrder(tx);
+      btn.disabled = false;
+      btn.innerHTML = orig;
+      if (saved.ok) {
+        box.hidden = true;
+        done.hidden = false;
+        done.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        console.error("orders POST rejected:", saved.error);
+        Toast.show(saved.error || "Impossible d'enregistrer la commande. Réessayez.", "err");
+      }
     })();
   });
+
+  /* ---- Cloudinary direct upload (browser → api.cloudinary.com) ---- */
+  async function uploadToCloudinary(file) {
+    const cfg = window.CloudConfig || {};
+    if (!cfg.cloudName || !cfg.unsignedPreset) {
+      throw new Error("Cloudinary non configuré (cloudName / unsignedPreset manquants)");
+    }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", cfg.unsignedPreset);
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+    try {
+      const res = await fetch("https://api.cloudinary.com/v1_1/" + cfg.cloudName + "/auto/upload", {
+        method: "POST",
+        body: fd,
+        signal: ctrl.signal,
+      });
+      if (!res.ok) throw new Error("Cloudinary HTTP " + res.status);
+      const data = await res.json();
+      if (!data || !data.secure_url) throw new Error("Réponse Cloudinary invalide");
+      return { url: data.secure_url, publicId: data.public_id || "" };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /* ---- save order to the Postgres-backed API ---- */
+  async function saveOrder(payload) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30000);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { ok: false, error: data.error || "Erreur serveur (" + res.status + ")." };
+      return { ok: true, id: data.id };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 
   updateTotal();
 })();

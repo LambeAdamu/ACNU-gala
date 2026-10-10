@@ -1,8 +1,8 @@
-/* Gala & Awards 2027 — ACNU payment platform. admin.js: verification console (Firebase auth + Firestore). Created on 2026-09-01. */
-
-/* Implements the ADMIN flow:
- *   Login (email + password) → view pending payments → open transaction →
- *   check proof → approve or reject → recorded decision → user status updates. */
+/* Gala & Awards 2027 — ACNU payment platform. admin.js: verification console.
+ * Login (email + password) → view pending payments → open transaction →
+ * check proof → approve or reject → recorded decision.
+ * Orders are read/written through the Postgres-backed REST API (/api/orders),
+ * authenticated with the Firebase ID token. Created 2026-09-01. */
 
 (function () {
   const gate = document.getElementById("gate");
@@ -40,21 +40,73 @@
   const tierLabel = { premium: "Premium", vip: "VIP", classic: "Classique" };
   const methodLabel = { mtn: "MoMo MTN", orange: "MoMo Orange", virement: "Virement / Agence", momomo: "Mobile Money (MoMo)" };
   let currentList = [];
+  let currentUser = null;
+  let refreshTimer = null;
+  const POLL_MS = 20000;
+
+  const esc = (s) =>
+    String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  /* ---- REST plumbing --------------------------------- */
+  function adminToken() {
+    if (!currentUser) return Promise.reject(new Error("non-autorise"));
+    return currentUser.getIdToken(true);
+  }
+
+  async function loadOrders() {
+    const token = await adminToken();
+    const res = await fetch("/api/orders", {
+      headers: { Authorization: "Bearer " + token },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Erreur serveur (" + res.status + ").");
+    return data.data || [];
+  }
+
+  async function saveDecision(id, decision) {
+    const token = await adminToken();
+    const res = await fetch("/api/orders/" + encodeURIComponent(id), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({
+        status: decision,
+        decidedBy: currentUser ? currentUser.email : "Admin ACNU",
+        decidedAt: new Date().toISOString(),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Erreur serveur (" + res.status + ").");
+    return data;
+  }
+
+  const refresh = async (silent) => {
+    try {
+      renderAll(await loadOrders());
+    } catch (e) {
+      console.error("orders fetch failed:", e);
+      if (!silent) Toast.show("Lecture des commandes impossible. Vérifiez la connexion.", "err");
+    }
+  };
 
   /* ---- auth lifecycle --------------------------------- */
-  let unsubscribe = null;
-
   const unlock = (user) => {
     gate.hidden = true;
     app.hidden = false;
     logoutBtn.hidden = false;
     whoAmI.textContent = "Connecté : " + user.email;
-    renderAll();
-    if (!unsubscribe) unsubscribe = TxApi.observe(renderAll);
+    currentUser = user;
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    refresh(true);
+    refreshTimer = setInterval(() => refresh(true), POLL_MS);
   };
 
   const lock = (msg) => {
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    currentUser = null;
+    currentList = [];
     gate.hidden = false;
     app.hidden = true;
     logoutBtn.hidden = true;
@@ -120,6 +172,27 @@
     return `<span class="tx-status ${cls}">${label}</span>`;
   }
 
+  function proofCell(t) {
+    const url = (t.proofUrl || "").trim();
+    if (!url) {
+      return `<span class="proof-missing" title="${esc(t.proof || "")}">preuve manquante</span>`;
+    }
+    const ext = String(t.proof || "").split(".").pop().toLowerCase();
+    const isImg = ["png", "jpg", "jpeg", "webp", "gif"].includes(ext);
+    if (isImg) {
+      return `<a href="${esc(url)}" target="_blank" rel="noopener" title="Ouvrir la preuve — ${esc(t.id)}">
+        <img class="tx-proof" src="${esc(url)}" alt="Preuve — ${esc(t.id)}"></a>`;
+    }
+    return `<a class="tx-proof-link" href="${esc(url)}" target="_blank" rel="noopener" title="Ouvrir la preuve — ${esc(t.id)}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg><span>${ext ? ext.toUpperCase() : "Doc"} · Preuve</span></a>`;
+  }
+
+  const emptyRow = `<tr><td colspan="7"><div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+    <b>Aucune transaction</b>En attente de paiements soumis depuis la page Paiement.</div></td></tr>`;
+
   function renderAll(list) {
     if (!list) return;
     currentList = list;
@@ -129,35 +202,30 @@
     rej.textContent = list.filter((t) => t.status === "rejected").length;
 
     if (!list.length) {
-      tab.innerHTML = `<tr><td colspan="7"><div class="empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-        <b>Aucune transaction</b>En attente de paiements soumis depuis la page Paiement.</div></td></tr>`;
+      tab.innerHTML = emptyRow;
       return;
     }
 
     tab.innerHTML = list
       .map((t) => {
-        const proofSrc = t.proof && t.proofUrl ? "/api/proof/" + encodeURIComponent(t.id) : "";
         return `<tr>
-        <td><b>${t.id}</b><br><small style="color:var(--ink-3)">${FMT.time(t.createdAt)}</small></td>
-        <td>${t.name}<br><small style="color:var(--ink-3)">${t.email} · ${t.tel}</small></td>
+        <td><b>${esc(t.id)}</b><br><small style="color:var(--ink-3)">${FMT.time(t.createdAt)}</small></td>
+        <td>${esc(t.name)}<br><small style="color:var(--ink-3)">${esc(t.email)} · ${esc(t.tel)}</small></td>
         <td><small>${tierLabel[t.tier] || "—"}</small></td>
         <td><b style="color:var(--gold-2);white-space:nowrap">${FMT.money(t.amount)}</b><br>
-          <small style="color:var(--ink-3)">${methodLabel[t.payMethod] || t.payMethod || "—"} · ${t.payDate || "—"}<br>Réf : ${t.ref || t.paynum}</small></td>
-        <td>${proofSrc
-          ? `<img class="tx-proof" src="${proofSrc}" alt="Preuve — ${t.id}" title="Cliquer pour agrandir" data-proof-url="${proofSrc}">`
-          : `<small title="${t.proof || ''}">${t.proof ? t.proof.slice(0, 22) + (t.proof.length > 22 ? "…" : "") : "—"}</small>`}</td>
+          <small style="color:var(--ink-3)">${methodLabel[t.payMethod] || esc(t.payMethod) || "—"} · ${esc(t.payDate) || "—"}<br>Réf : ${esc(t.ref || t.payNum) || "—"}</small></td>
+        <td>${proofCell(t)}</td>
         <td>${pill(t.status)}</td>
         <td>${
           t.status === "pending"
-            ? `<div class="tx-actions" role="group" aria-label="Décision pour ${t.id}">
-                 <button class="btn btn--sm" data-view="${t.id}">Voir</button>
-                 <button class="btn btn--sm btn--ok" data-decide="approved" data-id="${t.id}">Valider</button>
-                 <button class="btn btn--sm btn--no" data-decide="rejected" data-id="${t.id}">Rejeter</button>
+            ? `<div class="tx-actions" role="group" aria-label="Décision pour ${esc(t.id)}">
+                 <button class="btn btn--sm" data-view="${esc(t.id)}">Voir</button>
+                 <button class="btn btn--sm btn--ok" data-decide="approved" data-id="${esc(t.id)}">Valider</button>
+                 <button class="btn btn--sm btn--no" data-decide="rejected" data-id="${esc(t.id)}">Rejeter</button>
                </div>`
-            : `<div class="tx-actions" role="group" aria-label="Actions pour ${t.id}">
-                 <button class="btn btn--sm" data-view="${t.id}">Voir</button>
-                 <small style="color:var(--ink-3)">${t.decidedBy} · ${t.decidedAt ? FMT.time(t.decidedAt) : ""}</small>
+            : `<div class="tx-actions" role="group" aria-label="Actions pour ${esc(t.id)}">
+                 <button class="btn btn--sm" data-view="${esc(t.id)}">Voir</button>
+                 <small style="color:var(--ink-3)">${esc(t.decidedBy)} · ${t.decidedAt ? FMT.time(t.decidedAt) : ""}</small>
                </div>`
         }</td>
       </tr>`;
@@ -173,17 +241,23 @@
       btn.disabled = true;
       btn.innerHTML = '<span class="spin" aria-hidden="true"></span>';
     }
-    return TxApi.update(id, {
-      status: decision,
-      decidedBy: TxApi.current() ? TxApi.current().email : "Admin ACNU",
-      decidedAt: new Date().toISOString(),
-    }).then(() => {
-      Toast.show(
-        decision === "approved" ? `${id} validée — statut utilisateur mis à jour.` : `${id} rejetée — statut utilisateur mis à jour.`,
-        decision === "approved" ? "ok" : "err"
-      );
-      closeModal();
-    });
+    return saveDecision(id, decision)
+      .then(() => {
+        Toast.show(
+          decision === "approved" ? `${id} validée — statut utilisateur mis à jour.` : `${id} rejetée — statut utilisateur mis à jour.`,
+          decision === "approved" ? "ok" : "err"
+        );
+        closeModal();
+        return refresh(true);
+      })
+      .catch((e) => {
+        console.error("decision failed:", e);
+        Toast.show("Décision non enregistrée. Réessayez.", "err");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = decision === "approved" ? "Valider" : "Rejeter";
+        }
+      });
   };
 
   /* ---- transaction detail modal ---- */
@@ -198,21 +272,21 @@
 
   function openModal(t) {
     if (!modal || !t) return;
-    document.getElementById("txModalId").textContent = t.id;
-    document.getElementById("txModalName").textContent = t.name || t.buyerName || "";
+    document.getElementById("txModalId").textContent = esc(t.id);
+    document.getElementById("txModalName").textContent = esc(t.name || t.buyerName || "");
     document.getElementById("txModalContact").textContent = [t.email, t.tel].filter(Boolean).join(" · ");
     document.getElementById("txModalTier").textContent = tierLabel[t.tier] || "—";
     document.getElementById("txModalAmount").textContent = FMT.money(t.amount);
     document.getElementById("txModalMethod").textContent = methodLabel[t.payMethod] || t.payMethod || "—";
     document.getElementById("txModalRef").textContent =
-      ["Réf : " + (t.ref || t.paynum || "—"), t.payDate || ""].filter(Boolean).join(" · ");
+      ["Réf : " + (t.ref || t.payNum || "—"), t.payDate || ""].filter(Boolean).join(" · ");
     document.getElementById("txModalStatus").innerHTML = pill(t.status);
     document.getElementById("txModalDate").textContent = FMT.time(t.createdAt);
 
     const doc = document.getElementById("txModalDoc");
     const docLabel = document.getElementById("txModalDocLabel");
     const proofName = t.proof || "preuve";
-    const docUrl = t.proof && t.proofUrl ? "/api/proof/" + encodeURIComponent(t.id) : "";
+    const docUrl = (t.proofUrl || "").trim();
     if (docUrl && proofName !== "preuve") {
       doc.href = docUrl;
       doc.classList.remove("doc-card--disabled");
@@ -224,7 +298,7 @@
     } else {
       doc.href = "#";
       doc.classList.add("doc-card--disabled");
-      docLabel.textContent = proofName ? `${proofName} · Preuve de paiement — image non disponible` : "Aucun document joint";
+      docLabel.textContent = proofName ? `${proofName} · Preuve de paiement — image non disponible` : "preuve manquante — aucun document joint";
     }
 
     const canDecide = t.status === "pending";
@@ -269,33 +343,4 @@
       if (e.key === "Escape" && !modal.hidden) closeModal();
     });
   }
-
-  /* ---- proof lightbox ---- */
-  const lightbox = document.getElementById("proofLightbox");
-  const lightboxImg = document.getElementById("proofLightboxImg");
-  if (lightbox && lightboxImg) {
-    const openLightbox = (url) => {
-      lightboxImg.src = url;
-      lightbox.hidden = false;
-    };
-    const closeLightbox = () => {
-      lightbox.hidden = true;
-      lightboxImg.src = "";
-    };
-    tab.addEventListener("click", (e) => {
-      const thumb = e.target.closest(".tx-proof");
-      if (!thumb) return;
-      openLightbox(thumb.dataset.proofUrl || thumb.src);
-    });
-    const closeBtn = document.getElementById("proofLightboxClose");
-    if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
-    lightbox.addEventListener("click", (e) => {
-      if (e.target === lightbox) closeLightbox();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !lightbox.hidden) closeLightbox();
-    });
-  }
-
-  TxApi.seed();
 })();

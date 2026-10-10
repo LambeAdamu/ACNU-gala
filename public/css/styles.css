@@ -1407,6 +1407,28 @@ p {
 }
 .tx-proof:hover { border-color: var(--line-gold); }
 
+.tx-proof-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--gold-2);
+  font-size: 12px;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.tx-proof-link svg { width: 15px; height: 15px; flex: none; }
+.tx-proof-link:hover { border-color: var(--line-gold); background: rgba(216, 161, 62, 0.06); }
+
+.proof-missing {
+  font-size: 12px;
+  color: var(--danger);
+  white-space: nowrap;
+}
+
 .lightbox {
   position: fixed;
   inset: 0;

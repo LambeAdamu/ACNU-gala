@@ -179,7 +179,7 @@ export async function sendOrderConfirmation(order) {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    return { ok: true, messageId: info.messageId };
+    return { ok: true, messageId: info.messageId, accepted: info.accepted || [] };
   } catch (e) {
     console.error(
       "mail.js: send failed. code=" + (e && e.code ? e.code : "unknown") +

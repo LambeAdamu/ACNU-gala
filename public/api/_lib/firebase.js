@@ -34,10 +34,14 @@ function getAdminApp() {
     return app;
   }
   const privateKey = normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY);
-  if (!privateKey) {
-    throw new Error("FIREBASE_PRIVATE_KEY is not set");
-  }
   const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  if (!projectId) throw new Error("FIREBASE_PROJECT_ID is not set");
+  if (!clientEmail) throw new Error("FIREBASE_CLIENT_EMAIL is not set");
+  if (!privateKey) throw new Error("FIREBASE_PRIVATE_KEY is not set");
+  if (!/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(privateKey)) {
+    throw new Error("FIREBASE_PRIVATE_KEY is malformed (missing PEM header)");
+  }
   app = initializeApp({
     projectId,
     credential: cert({

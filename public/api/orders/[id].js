@@ -44,39 +44,44 @@ async function verifyAdmin(request) {
 
 export default {
   async fetch(request) {
-    if (request.method !== "PATCH") {
-      return Response.json({ ok: false, error: "Method not allowed." }, { status: 405 });
-    }
-
-    const auth = await verifyAdmin(request);
-    if (auth.error) return Response.json({ ok: false, error: auth.error }, { status: auth.status });
-
-    const { pathname } = new URL(request.url);
-    const id = decodeURIComponent(pathname.split("/").pop() || "");
-    if (!/^TX-[A-Z0-9]{6}$/.test(id)) {
-      return Response.json({ ok: false, error: "Référence de transaction invalide." }, { status: 400 });
-    }
-
-    const body = jsonParse(await request.text().catch(() => ""));
-    const status = body && String(body.status || "").trim();
-    if (!STATUSES[status]) {
-      return Response.json({ ok: false, error: "Statut invalide." }, { status: 400 });
-    }
-    const decidedBy = String(body.decidedBy || "").trim() || "Admin ACNU";
-    const decidedAt = (body && body.decidedAt) ? String(body.decidedAt) : new Date().toISOString();
-
     try {
-      const db = getDb();
-      const orderRef = db.collection("orders").doc(id);
-      const snap = await orderRef.get();
-      if (!snap.exists) {
-        return Response.json({ ok: false, error: "Transaction introuvable." }, { status: 404 });
+      if (request.method !== "PATCH") {
+        return Response.json({ ok: false, error: "Method not allowed." }, { status: 405 });
       }
-      await orderRef.update({ status, decided_by: decidedBy, decided_at: decidedAt });
-      return Response.json({ ok: true, id });
+
+      const auth = await verifyAdmin(request);
+      if (auth.error) return Response.json({ ok: false, error: auth.error }, { status: auth.status });
+
+      const { pathname } = new URL(request.url);
+      const id = decodeURIComponent(pathname.split("/").pop() || "");
+      if (!/^TX-[A-Z0-9]{6}$/.test(id)) {
+        return Response.json({ ok: false, error: "Référence de transaction invalide." }, { status: 400 });
+      }
+
+      const body = jsonParse(await request.text().catch(() => ""));
+      const status = body && String(body.status || "").trim();
+      if (!STATUSES[status]) {
+        return Response.json({ ok: false, error: "Statut invalide." }, { status: 400 });
+      }
+      const decidedBy = String(body.decidedBy || "").trim() || "Admin ACNU";
+      const decidedAt = (body && body.decidedAt) ? String(body.decidedAt) : new Date().toISOString();
+
+      try {
+        const db = getDb();
+        const orderRef = db.collection("orders").doc(id);
+        const snap = await orderRef.get();
+        if (!snap.exists) {
+          return Response.json({ ok: false, error: "Transaction introuvable." }, { status: 404 });
+        }
+        await orderRef.update({ status, decided_by: decidedBy, decided_at: decidedAt });
+        return Response.json({ ok: true, id });
+      } catch (e) {
+        console.error("orders/[id] PATCH error:", e.code || e.message);
+        return Response.json({ ok: false, error: "Mise à jour impossible." }, { status: 500 });
+      }
     } catch (e) {
-      console.error("orders/[id] PATCH error:", e.message);
-      return Response.json({ ok: false, error: "Mise à jour impossible." }, { status: 500 });
+      console.error("orders/[id] fatal error:", (e && (e.stack || e.message)) || e);
+      return Response.json({ ok: false, error: "Erreur serveur interne." }, { status: 500 });
     }
   },
 };

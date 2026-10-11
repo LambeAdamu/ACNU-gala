@@ -179,82 +179,87 @@ function validateOrder(body) {
 
 export default {
   async fetch(request) {
-    if (request.method === "POST") {
-      const body = jsonParse(await request.text().catch(() => ""));
-      const checked = validateOrder(body);
-      if (checked.error) return Response.json({ ok: false, error: checked.error }, { status: checked.status });
+    try {
+      if (request.method === "POST") {
+        const body = jsonParse(await request.text().catch(() => ""));
+        const checked = validateOrder(body);
+        if (checked.error) return Response.json({ ok: false, error: checked.error }, { status: checked.status });
 
-      const o = checked.order;
-      const normalizedRef = o.ref.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
-      if (!normalizedRef) {
-        return Response.json({ ok: false, error: "Référence de paiement invalide." }, { status: 400 });
-      }
-
-      const db = getDb();
-      const orderRef = db.collection("orders").doc(o.id);
-      const refRef = db.collection("paymentRefs").doc(normalizedRef);
-
-      try {
-        await db.runTransaction(async (tx) => {
-          tx.create(refRef, { orderId: o.id, created_at: FieldValue.serverTimestamp() });
-          tx.create(orderRef, {
-            id: o.id,
-            buyer_key: o.buyerKey,
-            name: o.name,
-            email: o.email,
-            tel: o.tel,
-            tickets: o.tickets,
-            qty: o.qty,
-            tier: o.tier,
-            participants: o.participants,
-            amount: o.amount,
-            pay_method: o.payMethod,
-            pay_num: o.payNum,
-            pay_date: o.payDate,
-            ref: o.ref,
-            proof: o.proof,
-            proof_size: o.proofSize,
-            proof_url: o.proofUrl,
-            proof_public_id: o.proofPublicId,
-            status: o.status,
-            decided_by: o.decidedBy,
-            decided_at: o.decidedAt,
-            created_at: FieldValue.serverTimestamp(),
-          });
-        });
-        return Response.json({ ok: true, id: o.id });
-      } catch (e) {
-        console.error("orders POST error:", e.message);
-        const alreadyExists =
-          e && (e.code === 6 || e.code === "already-exists" || /ALREADY_EXISTS/.test(String(e.message || "")));
-        if (alreadyExists) {
-          return Response.json(
-            { ok: false, error: "Cette référence existe déjà. Veuillez réessayer." },
-            { status: 409 }
-          );
+        const o = checked.order;
+        const normalizedRef = o.ref.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
+        if (!normalizedRef) {
+          return Response.json({ ok: false, error: "Référence de paiement invalide." }, { status: 400 });
         }
-        return Response.json({ ok: false, error: "Enregistrement de la commande impossible." }, { status: 500 });
+
+        try {
+          const db = getDb();
+          const orderRef = db.collection("orders").doc(o.id);
+          const refRef = db.collection("paymentRefs").doc(normalizedRef);
+
+          await db.runTransaction(async (tx) => {
+            tx.create(refRef, { orderId: o.id, created_at: FieldValue.serverTimestamp() });
+            tx.create(orderRef, {
+              id: o.id,
+              buyer_key: o.buyerKey,
+              name: o.name,
+              email: o.email,
+              tel: o.tel,
+              tickets: o.tickets,
+              qty: o.qty,
+              tier: o.tier,
+              participants: o.participants,
+              amount: o.amount,
+              pay_method: o.payMethod,
+              pay_num: o.payNum,
+              pay_date: o.payDate,
+              ref: o.ref,
+              proof: o.proof,
+              proof_size: o.proofSize,
+              proof_url: o.proofUrl,
+              proof_public_id: o.proofPublicId,
+              status: o.status,
+              decided_by: o.decidedBy,
+              decided_at: o.decidedAt,
+              created_at: FieldValue.serverTimestamp(),
+            });
+          });
+          return Response.json({ ok: true, id: o.id });
+        } catch (e) {
+          console.error("orders POST error:", e.code || e.message);
+          const alreadyExists =
+            e && (e.code === 6 || e.code === "already-exists" || /ALREADY_EXISTS/.test(String(e.message || "")));
+          if (alreadyExists) {
+            return Response.json(
+              { ok: false, error: "Cette référence existe déjà. Veuillez réessayer." },
+              { status: 409 }
+            );
+          }
+          return Response.json({ ok: false, error: "Enregistrement de la commande impossible." }, { status: 500 });
+        }
       }
-    }
 
-    if (request.method === "GET") {
-      const auth = await verifyAdmin(request);
-      if (auth.error) return Response.json({ ok: false, error: auth.error }, { status: auth.status });
+      if (request.method === "GET") {
+        const auth = await verifyAdmin(request);
+        if (auth.error) return Response.json({ ok: false, error: auth.error }, { status: auth.status });
 
-      try {
-        const db = getDb();
-        const snap = await db
-          .collection("orders")
-          .orderBy("created_at", "desc")
-          .limit(LIST_LIMIT)
-          .get();
-        return Response.json({ ok: true, data: snap.docs.map((d) => toPublic(d.data())) });
-      } catch (e) {
-        console.error("orders GET error:", e.message);
-        return Response.json({ ok: false, error: "Lecture des commandes impossible." }, { status: 500 });
+        try {
+          const db = getDb();
+          const snap = await db
+            .collection("orders")
+            .orderBy("created_at", "desc")
+            .limit(LIST_LIMIT)
+            .get();
+          return Response.json({ ok: true, data: snap.docs.map((d) => toPublic(d.data())) });
+        } catch (e) {
+          console.error("orders GET error:", e.code || e.message);
+          return Response.json({ ok: false, error: "Lecture des commandes impossible." }, { status: 500 });
+        }
       }
-    }
 
-    return Response.json({ ok: false, error: "Method not allowed." }, { status: 405 });
+      return Response.json({ ok: false, error: "Method not allowed." }, { status: 405 });
+    } catch (e) {
+      console.error("orders fatal error:", (e && (e.stack || e.message)) || e);
+      return Response.json({ ok: false, error: "Erreur serveur interne." }, { status: 500 });
+    }
   },
 };

@@ -11,7 +11,11 @@
     classic: { label: "Classique", price: 15000, max: 160 },
   };
 
-  const MOBILE_MONEY = { number: "695684040", display: "695 68 40 40", name: "Lambe Emmanuel" };
+  const PAY_METHODS = {
+    momomo: { label: "Mobile Money (MoMo)", number: "678613421", name: "BUZUAH STELMON-LYDIA" },
+    orange: { label: "Orange Money (OM)", number: "686410795", name: "Virginie Florence" },
+  };
+  let selectedPay = "momomo";
   const TIER_ORDER = ["premium", "vip", "classic"];
   const participantCache = {}; // key like "premium:0" -> entered name
 
@@ -114,12 +118,24 @@
     });
   });
 
-  /* ---- copy MoMo number ---- */
+  /* ---- payment method selection + copy ---- */
+  root.querySelectorAll('input[name="payMethod"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      selectedPay = radio.value;
+      root.querySelectorAll(".pay-method").forEach((card) => {
+        const input = card.querySelector('input[name="payMethod"]');
+        card.classList.toggle("is-selected", !!input && input.checked);
+      });
+    });
+  });
+
   document.querySelectorAll("[data-copy]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = document.getElementById(btn.dataset.copy);
       if (!target) return;
-      (navigator.clipboard ? navigator.clipboard.writeText(MOBILE_MONEY.number) : Promise.reject())
+      const value = target.dataset.raw || target.textContent.replace(/\D/g, "");
+      (navigator.clipboard ? navigator.clipboard.writeText(value) : Promise.reject())
         .then(() => Toast.show("Numéro copié.", "ok"))
         .catch(() => Toast.show("Numéro copié.", "ok"));
     });
@@ -139,6 +155,7 @@
   };
 
   /* ---- proof upload ---- */
+  const MAX_PROOF_BYTES = 8 * 1024 * 1024; // 8 MB — keep in sync with api/orders.js
   const uploadZone = document.getElementById("uploadZone");
   const fileInput = document.getElementById("f-proof");
   uploadZone.addEventListener("click", () => fileInput.click());
@@ -153,7 +170,7 @@
       fileInput.value = "";
       return;
     }
-    if (f.size > 8 * 1024 * 1024) {
+    if (f.size > MAX_PROOF_BYTES) {
       setErr("proof", "Fichier trop volumineux (max 8 Mo).");
       fileInput.value = "";
       return;
@@ -186,6 +203,14 @@
     const preview = document.getElementById("filePreview");
     if (preview) preview.hidden = true;
     uploadZone.classList.remove("has-file");
+
+    // reset payment method to the default (Mobile Money)
+    selectedPay = "momomo";
+    root.querySelectorAll('input[name="payMethod"]').forEach((radio) => {
+      radio.checked = radio.value === selectedPay;
+      const card = radio.closest(".pay-method");
+      if (card) card.classList.toggle("is-selected", radio.checked);
+    });
 
     // clear any visible error states
     ["buyer", "tel", "email", ...TIER_ORDER.map((t) => "qty-" + t), "proof"].forEach((id) => clearErr(id));
@@ -270,10 +295,10 @@
       tier: dominant,
       participants: names,
       amount: totalAmount(),
-      payMethod: "momomo",
-      payNum: MOBILE_MONEY.number,
+      payMethod: selectedPay,
+      payNum: PAY_METHODS[selectedPay].number,
       payDate: now.toISOString().slice(0, 10),
-      ref: "MoMo " + MOBILE_MONEY.number,
+      ref: PAY_METHODS[selectedPay].label + " " + PAY_METHODS[selectedPay].number,
       proof: proofFile.name,
       proofSize: proofFile.size,
       proofUrl: "",
@@ -290,12 +315,15 @@
     btn.innerHTML = '<span class="spin" aria-hidden="true"></span> Envoi en cours…';
 
     (async () => {
-      let proof = { url: "", publicId: "" };
+      let proof;
       try {
         proof = await uploadToCloudinary(proofFile);
       } catch (e) {
         console.error("proof upload failed:", e);
-        Toast.show("Preuve non téléversée — seule la référence a été enregistrée (preuve manquante).", "err");
+        btn.disabled = false;
+        btn.innerHTML = orig;
+        Toast.show("Téléversement de la preuve impossible. Réessayez avant de valider.", "err");
+        return;
       }
       tx.proofUrl = proof.url;
       tx.proofPublicId = proof.publicId;
@@ -319,6 +347,9 @@
     const cfg = window.CloudConfig || {};
     if (!cfg.cloudName || !cfg.unsignedPreset) {
       throw new Error("Cloudinary non configuré (cloudName / unsignedPreset manquants)");
+    }
+    if (!file || file.size > MAX_PROOF_BYTES) {
+      throw new Error("Fichier trop volumineux (max 8 Mo).");
     }
     const fd = new FormData();
     fd.append("file", file);

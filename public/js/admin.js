@@ -36,10 +36,9 @@
   const pending = document.getElementById("statPending");
   const ok = document.getElementById("statOk");
   const rej = document.getElementById("statRej");
-  const loadError = document.getElementById("loadError");
 
   const tierLabel = { premium: "Premium", vip: "VIP", classic: "Classique" };
-  const methodLabel = { mtn: "MoMo MTN", orange: "Orange Money (OM)", virement: "Virement / Agence", momomo: "Mobile Money (MoMo)" };
+  const methodLabel = { mtn: "MoMo MTN", orange: "MoMo Orange", virement: "Virement / Agence", momomo: "Mobile Money (MoMo)" };
   let currentList = [];
   let currentUser = null;
   let refreshTimer = null;
@@ -60,31 +59,8 @@
       headers: { Authorization: "Bearer " + token },
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const err = new Error(data.error || "Erreur serveur (" + res.status + ").");
-      err.status = res.status;
-      throw err;
-    }
+    if (!res.ok) throw new Error(data.error || "Erreur serveur (" + res.status + ").");
     return data.data || [];
-  }
-
-  /* ---- load-failure banner ---------------------------- */
-  function showLoadError(code) {
-    if (!loadError) return;
-    loadError.hidden = false;
-    loadError.innerHTML =
-      '<span class="load-error__msg">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
-      '<span>Impossible de charger les transactions (' + esc(code) + ').</span></span>' +
-      '<button type="button" class="btn btn--sm" id="loadRetry">Réessayer</button>';
-    const retry = document.getElementById("loadRetry");
-    if (retry) retry.addEventListener("click", () => refresh(false));
-  }
-
-  function hideLoadError() {
-    if (!loadError) return;
-    loadError.hidden = true;
-    loadError.innerHTML = "";
   }
 
   async function saveDecision(id, decision) {
@@ -108,13 +84,9 @@
 
   const refresh = async (silent) => {
     try {
-      const list = await loadOrders();
-      hideLoadError();
-      renderAll(list);
+      renderAll(await loadOrders());
     } catch (e) {
-      const code = (e && e.status) ? e.status : "réseau";
-      console.error("orders fetch failed (" + code + "):", e && e.message);
-      showLoadError(code);
+      console.error("orders fetch failed:", e);
       if (!silent) Toast.show("Lecture des commandes impossible. Vérifiez la connexion.", "err");
     }
   };
@@ -135,7 +107,6 @@
     if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
     currentUser = null;
     currentList = [];
-    hideLoadError();
     gate.hidden = false;
     app.hidden = true;
     logoutBtn.hidden = true;
@@ -204,7 +175,7 @@
   function proofCell(t) {
     const url = (t.proofUrl || "").trim();
     if (!url) {
-      return `<span class="proof-missing" title="${esc(t.proof || "")}">Aucune preuve</span>`;
+      return `<span class="proof-missing" title="${esc(t.proof || "")}">preuve manquante</span>`;
     }
     const ext = String(t.proof || "").split(".").pop().toLowerCase();
     const isImg = ["png", "jpg", "jpeg", "webp", "gif"].includes(ext);

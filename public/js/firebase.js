@@ -3,13 +3,11 @@
 
 const firApp = firebase.initializeApp(FireConfig);
 const firAuth = firebase.auth(firApp);
-/* Firestore/Storage SDKs are optional: the admin console loads only app+auth,
- * and no page reads or writes Firestore any more (orders live in Postgres). */
-const firDb = firebase.firestore ? firebase.firestore(firApp) : null;
-const firStorage = firebase.storage ? firebase.storage(firApp) : null;
+const firDb = firebase.firestore(firApp);
+const firStorage = firebase.storage(firApp);
 
 const TX_COLL = "transactions";
-const TX_QUERY = firDb ? firDb.collection(TX_COLL).orderBy("createdAt", "desc") : null;
+const TX_QUERY = firDb.collection(TX_COLL).orderBy("createdAt", "desc");
 
 /* Firestore-backed store mirroring AcnuStore's read shape, with a
  * localStorage fallback (AcnuStore) so the payment page keeps working offline. */

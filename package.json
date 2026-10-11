@@ -5,11 +5,11 @@
   "description": "Server-side admin scripts (Firebase Admin SDK). NEVER used by the browser.",
   "type": "commonjs",
   "scripts": {
-    "create-admin": "node admin-create-user.js",
-    "env:check": "node scripts/env-check.js"
+    "create-admin": "node admin-create-user.js"
   },
   "dependencies": {
-    "firebase-admin": "^12.7.0"
+    "firebase-admin": "^12.7.0",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "firebase-tools": "^15.29.0"

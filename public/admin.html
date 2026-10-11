@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
   <meta name="description" content="Gala &amp; Awards 2027 — Console de vérification des paiements ACNU. Accès réservé aux administrateurs.">
   <title>Espace administrateur — Gala &amp; Awards 2027 · ACNU</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +19,7 @@
       justify-content: space-between;
       gap: 16px;
       padding: 0 24px;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(12, 10, 9, 0.85);
       backdrop-filter: blur(18px) saturate(140%);
       -webkit-backdrop-filter: blur(18px) saturate(140%);
       border-bottom: 1px solid var(--line);
@@ -34,7 +33,7 @@
       right: 0;
       bottom: -1px;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold-hi), var(--gold), var(--gold-deep), transparent);
+      background: linear-gradient(90deg, transparent, var(--gold-2), var(--gold), var(--gold-deep), transparent);
     }
     .admin-header__title {
       font-family: var(--font-display);
@@ -62,45 +61,18 @@
       border-radius: 999px;
       transition: color 0.18s var(--ease), background 0.18s var(--ease);
     }
-    .admin-header__link:hover { color: var(--ink); background: var(--bg-2); }
+    .admin-header__link:hover { color: var(--ink); background: var(--glass); }
     .admin-header__link--logout {
       color: var(--gold-2);
-      border: 1px solid var(--gold-deep);
-      box-shadow: inset 0 0 0 1px var(--gold-deep);
+      border: 1px solid var(--line-gold);
+      box-shadow: inset 0 0 0 1.5px transparent;
     }
     .admin-header__link--logout:hover {
-      box-shadow: inset 0 0 0 1px var(--gold-deep);
-      background: var(--gold-soft);
+      box-shadow: inset 0 0 0 1.5px var(--gold-2);
+      background: rgba(216, 161, 62, 0.08);
     }
     /* Login card: centered in the space below the admin header */
     .gate { min-height: calc(100vh - var(--admin-header-h, 64px)); }
-    /* Load-failure banner (filled by admin.js) */
-    #loadError {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-      margin-bottom: 24px;
-      padding: 14px 18px;
-      border: 1px solid var(--danger-line);
-      border-radius: var(--radius-md);
-      background: var(--danger-soft);
-      color: var(--danger);
-      font-size: 14px;
-      font-weight: 500;
-    }
-    #loadError .load-error__msg {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-    #loadError .load-error__msg svg {
-      width: 18px;
-      height: 18px;
-      flex: none;
-    }
   </style>
 </head>
 <body>
@@ -119,7 +91,7 @@
     <section id="gate" class="gate" aria-label="Connexion administrateur">
       <div class="panel gate__card">
         <div class="tx-card" style="text-align:center">
-          <div class="tx-card__icon" style="color:var(--gold-2); border-color:var(--gold-deep); background:var(--gold-soft)" aria-hidden="true">
+          <div class="tx-card__icon" style="color:var(--gold-2); border-color:var(--line-gold); background:rgba(216,161,62,.1)" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
           </div>
           <h3>Espace Payment Administrator</h3>
@@ -155,8 +127,6 @@
           <h1 class="sec-head__title">Transactions à vérifier</h1>
           <span id="whoAmI" style="display:block;margin-top:10px;font-size:13px;color:var(--ink-3)"></span>
         </div>
-
-        <div id="loadError" role="alert" hidden></div>
 
         <div class="stats" data-reveal style="margin-bottom:32px">
           <div class="card stat">
@@ -263,6 +233,9 @@
   <script src="js/main.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js" defer></script>
   <script src="js/firebase-config.js" defer></script>
   <script src="js/firebase.js" defer></script>
   <script src="js/admin.js" defer></script>

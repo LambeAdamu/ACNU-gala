@@ -1,20 +1,14 @@
 /* Gala & Awards 2027 — ACNU. api/orders/[id].js (Vercel Serverless Function).
  * PATCH /api/orders/:id  update an order's decision (status, decidedBy, decidedAt).
- * Admin only: requires a valid Firebase ID token whose account e-mail is allowed.
- * Uses the Web Fetch API export shape (`{ fetch }`).
+ * Admin only: requires a valid Firebase ID token whose account e-mail is in
+ * ADMIN_EMAILS. Uses the Web Fetch API export shape (`{ fetch }`).
  *
- * Env: DATABASE_URL, FIREBASE_WEB_API_KEY. */
+ * Env: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY,
+ *      ADMIN_EMAILS (comma-separated). */
 
-import pg from "pg";
+import { getDb, getAuth } from "../_lib/firebase.js";
 
-const { Pool } = pg;
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-/* Admin allowlist. Configurable via the ADMIN_EMAILS env var (comma-separated);
- * falls back to the historical default so nothing breaks if it is unset. */
-const ADMIN_EMAIL = "acnubureau.littoral@gmail.com";
-const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || ADMIN_EMAIL)
+const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || "")
   .split(",")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
@@ -28,34 +22,24 @@ function jsonParse(text) {
   }
 }
 
+/* Verify an admin ID token with the Firebase Admin SDK.
+ * Returns { email } on success, or { error } with a matching HTTP status. */
 async function verifyAdmin(request) {
-  const auth = request.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  const apiKey = process.env.FIREBASE_WEB_API_KEY;
-  if (!apiKey) {
-    console.error("orders/[id]: FIREBASE_WEB_API_KEY is not set on the server.");
-    return { error: "Server configuration error.", status: 500 };
-  }
+  const authHeader = request.headers.get("authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
   if (!token) return { error: "Authentification requise.", status: 401 };
 
+  const auth = getAuth();
+  let decoded;
   try {
-    const res = await fetch(
-      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + apiKey,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken: token }),
-      }
-    );
-    if (!res.ok) return { error: "Authentification invalide.", status: 401 };
-    const data = await res.json();
-    const email = ((data.users && data.users[0] && data.users[0].email) || "").trim();
-    if (!ADMIN_EMAILS.includes(email.toLowerCase())) return { error: "Accès refusé.", status: 403 };
-    return { email };
+    decoded = await auth.verifyIdToken(token);
   } catch (e) {
-    console.error("orders/[id] token lookup error:", e);
-    return { error: "Vérification de session impossible.", status: 500 };
+    console.error("orders/[id] verifyIdToken error:", e.code || e.message);
+    return { error: "Authentification invalide.", status: 401 };
   }
+  const email = String(decoded.email || "").trim().toLowerCase();
+  if (!email || !ADMIN_EMAILS.includes(email)) return { error: "Accès refusé.", status: 403 };
+  return { email };
 }
 
 export default {
@@ -82,17 +66,16 @@ export default {
     const decidedAt = (body && body.decidedAt) ? String(body.decidedAt) : new Date().toISOString();
 
     try {
-      const res = await pool.query(
-        `UPDATE transactions SET status = $2, decided_by = $3, decided_at = $4
-         WHERE id = $1 RETURNING id, status, decided_by, decided_at`,
-        [id, status, decidedBy, decidedAt]
-      );
-      if (!res.rows.length) {
+      const db = getDb();
+      const orderRef = db.collection("orders").doc(id);
+      const snap = await orderRef.get();
+      if (!snap.exists) {
         return Response.json({ ok: false, error: "Transaction introuvable." }, { status: 404 });
       }
+      await orderRef.update({ status, decided_by: decidedBy, decided_at: decidedAt });
       return Response.json({ ok: true, id });
     } catch (e) {
-      console.error("orders/[id] PATCH error:", e);
+      console.error("orders/[id] PATCH error:", e.message);
       return Response.json({ ok: false, error: "Mise à jour impossible." }, { status: 500 });
     }
   },

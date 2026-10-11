@@ -8,8 +8,9 @@ const path = require("path");
 
 const root = path.resolve(__dirname, "..");
 const REQUIRED = [
-  "DATABASE_URL",
-  "FIREBASE_WEB_API_KEY",
+  "FIREBASE_PROJECT_ID",
+  "FIREBASE_CLIENT_EMAIL",
+  "FIREBASE_PRIVATE_KEY",
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_UNSIGNED_PRESET",
 ];

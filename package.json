@@ -9,8 +9,7 @@
     "env:check": "node scripts/env-check.js"
   },
   "dependencies": {
-    "firebase-admin": "^12.7.0",
-    "pg": "^8.11.3"
+    "firebase-admin": "^12.7.0"
   },
   "devDependencies": {
     "firebase-tools": "^15.29.0"

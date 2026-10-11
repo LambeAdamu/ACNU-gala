@@ -14,9 +14,42 @@ const { Pool } = pg;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+/* Admin allowlist. Configurable via the ADMIN_EMAILS env var (comma-separated);
+ * falls back to the historical default so nothing breaks if it is unset. */
 const ADMIN_EMAIL = "acnubureau.littoral@gmail.com";
+const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || ADMIN_EMAIL)
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 const TIERS = { premium: true, vip: true, classic: true };
 const STATUSES = { pending: true, approved: true, rejected: true };
+const PAY_METHODS = { momomo: true, orange: true };
+const MAX_PROOF_BYTES = 8 * 1024 * 1024; // 8 MB — keep in sync with payments.js
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "";
+
+/* A proof is mandatory and must be a real asset uploaded to our Cloudinary
+ * account, so a buyer cannot persist an order without a transaction proof. */
+function validateProof(proofUrl, proofSize, cloudName) {
+  if (!proofUrl) return { error: "Preuve de paiement requise.", status: 400 };
+  let url;
+  try {
+    url = new URL(proofUrl);
+  } catch (e) {
+    return { error: "URL de preuve invalide.", status: 400 };
+  }
+  const onCloudinary =
+    url.protocol === "https:" &&
+    url.hostname === "res.cloudinary.com" &&
+    (!cloudName || url.pathname.startsWith("/" + cloudName + "/"));
+  if (!onCloudinary) return { error: "Preuve de paiement non valide.", status: 400 };
+  if (!Number.isFinite(proofSize) || proofSize <= 0) {
+    return { error: "Taille de preuve invalide.", status: 400 };
+  }
+  if (proofSize > MAX_PROOF_BYTES) {
+    return { error: "Preuve trop volumineuse (max 8 Mo).", status: 400 };
+  }
+  return { ok: true };
+}
 
 function jsonParse(text) {
   try {
@@ -76,8 +109,8 @@ async function verifyAdmin(request) {
     );
     if (!res.ok) return { error: "Authentification invalide.", status: 401 };
     const data = await res.json();
-    const email = (data.users && data.users[0] && data.users[0].email) || "";
-    if (email !== ADMIN_EMAIL) return { error: "Accès refusé.", status: 403 };
+    const email = ((data.users && data.users[0] && data.users[0].email) || "").trim();
+    if (!ADMIN_EMAILS.includes(email.toLowerCase())) return { error: "Accès refusé.", status: 403 };
     return { email };
   } catch (e) {
     console.error("orders token lookup error:", e);
@@ -109,6 +142,19 @@ function validateOrder(body) {
   if (!Number.isInteger(rawQty) || rawQty <= 0) return { error: "Quantité invalide.", status: 400 };
   if (!Number.isFinite(rawAmount) || rawAmount < 0) return { error: "Montant invalide.", status: 400 };
 
+  const proof = String(body.proof || "").trim();
+  const proofUrl = String(body.proofUrl || "").trim();
+  const proofPublicId = String(body.proofPublicId || "").trim();
+  const proofSize = Number(body.proofSize);
+  if (!proof) return { error: "Preuve de paiement requise.", status: 400 };
+  const proofCheck = validateProof(proofUrl, proofSize, CLOUD_NAME);
+  if (proofCheck.error) return { error: proofCheck.error, status: proofCheck.status };
+
+  const payMethod = String(body.payMethod || "momomo").trim();
+  const payNum = String(body.payNum || "").trim();
+  if (!PAY_METHODS[payMethod]) return { error: "Moyen de paiement invalide.", status: 400 };
+  if (payNum.replace(/\D/g, "").length < 8) return { error: "Numéro de paiement invalide.", status: 400 };
+
   return {
     order: {
       id,
@@ -121,14 +167,14 @@ function validateOrder(body) {
       tier,
       participants,
       amount: Math.round(rawAmount),
-      payMethod: String(body.payMethod || "momomo"),
-      payNum: String(body.payNum || ""),
+      payMethod,
+      payNum,
       payDate: String(body.payDate || ""),
       ref: String(body.ref || ""),
-      proof: String(body.proof || ""),
-      proofSize: Number.isFinite(Number(body.proofSize)) ? Number(body.proofSize) : null,
-      proofUrl: String(body.proofUrl || ""),
-      proofPublicId: String(body.proofPublicId || ""),
+      proof,
+      proofSize,
+      proofUrl,
+      proofPublicId,
       status,
       decidedBy: String(body.decidedBy || ""),
       decidedAt: body.decidedAt ? String(body.decidedAt) : null,

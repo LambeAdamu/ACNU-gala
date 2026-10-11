@@ -266,80 +266,9 @@
     else clearErr("proof");
 
     if (!ok) return;
-
-    const now = new Date();
-    const iso = now.toISOString();
-    const buyerKey = (email.toLowerCase() + "|" + iso).toLowerCase();
-
-    const tickets = TIER_ORDER
-      .filter((t) => getQty(t) > 0)
-      .map((t) => ({ tier: t, qty: getQty(t) }));
-
-    // dominant tier for the admin "Billet" column
-    let dominant = tickets[0] ? tickets[0].tier : "";
-    TIER_ORDER.forEach((t) => {
-      const q = getQty(t);
-      const dq = getQty(dominant);
-      if (q > 0 && (dominant === "" || q > dq || (q === dq && TIER_ORDER.indexOf(t) < TIER_ORDER.indexOf(dominant)))) dominant = t;
+    openConfirmationModal(email.trim(), () => {
+      performSubmission({ buyer, tel, email: email.trim(), proofFile });
     });
-
-    const tx = {
-      id: AcnuStore.uid("TX-", 6),
-      buyerKey: buyerKey,
-      buyerName: buyer,
-      name: buyer,
-      email: email,
-      tel: tel,
-      tickets: tickets,
-      qty: totalQty(),
-      tier: dominant,
-      participants: names,
-      amount: totalAmount(),
-      payMethod: selectedPay,
-      payNum: PAY_METHODS[selectedPay].number,
-      payDate: now.toISOString().slice(0, 10),
-      ref: PAY_METHODS[selectedPay].label + " " + PAY_METHODS[selectedPay].number,
-      proof: proofFile.name,
-      proofSize: proofFile.size,
-      proofUrl: "",
-      proofPublicId: "",
-      createdAt: iso,
-      status: "pending",
-      decidedBy: "",
-      decidedAt: "",
-    };
-
-    const btn = document.getElementById("paySubmit");
-    const orig = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spin" aria-hidden="true"></span> Envoi en cours…';
-
-    (async () => {
-      let proof;
-      try {
-        proof = await uploadToCloudinary(proofFile);
-      } catch (e) {
-        console.error("proof upload failed:", e);
-        btn.disabled = false;
-        btn.innerHTML = orig;
-        Toast.show("Téléversement de la preuve impossible. Réessayez avant de valider.", "err");
-        return;
-      }
-      tx.proofUrl = proof.url;
-      tx.proofPublicId = proof.publicId;
-
-      const saved = await saveOrder(tx);
-      btn.disabled = false;
-      btn.innerHTML = orig;
-      if (saved.ok) {
-        box.hidden = true;
-        done.hidden = false;
-        done.scrollIntoView({ behavior: "smooth", block: "center" });
-      } else {
-        console.error("orders POST rejected:", saved.error);
-        Toast.show(saved.error || "Impossible d'enregistrer la commande. Réessayez.", "err");
-      }
-    })();
   });
 
   /* ---- Cloudinary direct upload (browser → api.cloudinary.com) ---- */
@@ -387,6 +316,231 @@
       return { ok: true, id: data.id };
     } finally {
       clearTimeout(timer);
+    }
+  }
+
+  }
+
+  let modalState = {
+    open: false,
+    onConfirm: null,
+    lastFocused: null,
+    focusable: [],
+    first: null,
+    last: null,
+  };
+
+  function getFocusable(el) {
+    const nodes = el.querySelectorAll(
+      'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    return Array.from(nodes).filter((n) => !n.hasAttribute("hidden") && n.offsetParent !== null);
+  }
+
+  function openConfirmationModal(email, onConfirm) {
+    const backdrop = document.getElementById("payModalBackdrop");
+    const modal = document.getElementById("payModal");
+    const emailEl = document.getElementById("payModalEmail");
+    const cancelBtn = document.getElementById("payModalCancel");
+    const confirmBtn = document.getElementById("payModalConfirm");
+    if (!backdrop || !modal || !emailEl || !cancelBtn || !confirmBtn) return;
+
+    modalState.lastFocused = document.activeElement;
+    emailEl.textContent = (email || "").trim();
+    backdrop.hidden = false;
+    modal.hidden = false;
+
+    const focusable = getFocusable(modal);
+    modalState.focusable = focusable;
+    modalState.first = focusable[0] || confirmBtn;
+    modalState.last = focusable[focusable.length - 1] || confirmBtn;
+    modalState.onConfirm = onConfirm;
+    modalState.open = true;
+
+    document.body.style.overflow = "hidden";
+
+    setTimeout(() => {
+      modalState.first?.focus();
+    }, 0);
+
+    function handleKey(e) {
+      if (!modalState.open) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeConfirmationModal();
+        return;
+      }
+      if (e.key === "Tab") {
+        if (modalState.focusable.length <= 1) {
+          e.preventDefault();
+          return;
+        }
+        if (e.shiftKey) {
+          if (document.activeElement === modalState.first) {
+            e.preventDefault();
+            modalState.last?.focus();
+          }
+        } else {
+          if (document.activeElement === modalState.last) {
+            e.preventDefault();
+            modalState.first?.focus();
+          }
+        }
+      }
+    }
+
+    function handleBackdrop(e) {
+      if (e.target === backdrop || e.target === modal) {
+        closeConfirmationModal();
+      }
+    }
+
+    function cleanup() {
+      backdrop.removeEventListener("click", handleBackdrop);
+      modal.removeEventListener("click", handleBackdrop);
+      document.removeEventListener("keydown", handleKey);
+      cancelBtn.removeEventListener("click", closeConfirmationModal);
+      confirmBtn.removeEventListener("click", handleConfirm);
+    }
+
+    function handleConfirm() {
+      if (!modalState.onConfirm) {
+        closeConfirmationModal();
+        return;
+      }
+      confirmBtn.disabled = true;
+      cancelBtn.disabled = true;
+      const fn = modalState.onConfirm;
+      modalState.onConfirm = null;
+      closeConfirmationModal({ restoreFocus: false });
+      try {
+        fn();
+      } finally {
+        // focus will be managed by flow; restore to submit if present
+        const submit = document.getElementById("paySubmit");
+        submit?.focus?.();
+      }
+    }
+
+    function closeConfirmationModal(opts = { restoreFocus: true }) {
+      if (!modalState.open) return;
+      modalState.open = false;
+      backdrop.hidden = true;
+      modal.hidden = true;
+      document.body.style.overflow = "";
+      cleanup();
+      if (opts.restoreFocus && modalState.lastFocused) {
+        const el = modalState.lastFocused;
+        if (typeof el?.focus === "function") {
+          setTimeout(() => el.focus(), 0);
+        }
+      } else {
+        const submit = document.getElementById("paySubmit");
+        submit?.focus?.();
+      }
+      confirmBtn.disabled = false;
+      cancelBtn.disabled = false;
+    }
+
+    backdrop.addEventListener("click", handleBackdrop);
+    modal.addEventListener("click", handleBackdrop);
+    document.addEventListener("keydown", handleKey);
+    cancelBtn.addEventListener("click", closeConfirmationModal);
+    confirmBtn.addEventListener("click", handleConfirm);
+  }
+
+  async function performSubmission(data) {
+    const buyer = data.buyer.trim();
+    const tel = data.tel.trim();
+    const email = data.email.trim();
+    const proofFile = data.proofFile;
+
+    const now = new Date();
+    const iso = now.toISOString();
+    const buyerKey = (email.toLowerCase() + "|" + iso).toLowerCase();
+
+    const tickets = TIER_ORDER
+      .filter((t) => getQty(t) > 0)
+      .map((t) => ({ tier: t, qty: getQty(t) }));
+
+    let dominant = tickets[0] ? tickets[0].tier : "";
+    TIER_ORDER.forEach((t) => {
+      const q = getQty(t);
+      const dq = getQty(dominant);
+      if (q > 0 && (dominant === "" || q > dq || (q === dq && TIER_ORDER.indexOf(t) < TIER_ORDER.indexOf(dominant)))) dominant = t;
+    });
+
+    const participants = [];
+    const namesArr = [];
+    TIER_ORDER.forEach((tier) => {
+      for (let i = 0; i < getQty(tier); i++) {
+        const key = tier + ":" + i;
+        const v = (participantCache[key] || "");
+        namesArr.push({ tier, key, name: v });
+        participants.push({ tier, name: v });
+      }
+    });
+
+    const tx = {
+      id: AcnuStore.uid("TX-", 6),
+      buyerKey: buyerKey,
+      buyerName: buyer,
+      name: buyer,
+      email: email,
+      tel: tel,
+      tickets: tickets,
+      qty: totalQty(),
+      tier: dominant,
+      participants: participants,
+      amount: totalAmount(),
+      payMethod: selectedPay,
+      payNum: PAY_METHODS[selectedPay].number,
+      payDate: now.toISOString().slice(0, 10),
+      ref: PAY_METHODS[selectedPay].label + " " + PAY_METHODS[selectedPay].number,
+      proof: proofFile.name,
+      proofSize: proofFile.size,
+      proofUrl: "",
+      proofPublicId: "",
+      createdAt: iso,
+      status: "pending",
+      decidedBy: "",
+      decidedAt: "",
+    };
+
+    const btn = document.getElementById("paySubmit");
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin" aria-hidden="true"></span> Envoi en cours...';
+
+    try {
+      let proof;
+      try {
+        proof = await uploadToCloudinary(proofFile);
+      } catch (e) {
+        console.error("proof upload failed:", e);
+        Toast.show("Téléversement de la preuve impossible. Réessayez avant de valider.", "err");
+        return;
+      }
+      tx.proofUrl = proof.url;
+      tx.proofPublicId = proof.publicId;
+
+      const saved = await saveOrder(tx);
+      if (saved.ok) {
+        const paySpamNote = document.getElementById("paySpamNote");
+        if (paySpamNote) {
+          paySpamNote.textContent = "Un e-mail de confirmation vous sera envoyé à " + email + ". Pensez à vérifier votre boîte de réception ainsi que vos courriers indésirables (spam).";
+          paySpamNote.hidden = false;
+        }
+        box.hidden = true;
+        done.hidden = false;
+        done.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        console.error("orders POST rejected:", saved.error);
+        Toast.show(saved.error || "Impossible d'enregistrer la commande. Réessayez.", "err");
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = orig;
     }
   }
 

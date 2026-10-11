@@ -12,7 +12,10 @@ const REQUIRED = [
   "FIREBASE_WEB_API_KEY",
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_UNSIGNED_PRESET",
+  "MAIL_USER",
+  "MAIL_APP_PASSWORD",
 ];
+const OPTIONAL = ["MAIL_FROM_NAME", "MAIL_BCC"];
 
 function loadEnv() {
   const envPath = path.join(root, ".env");
@@ -50,6 +53,12 @@ for (const name of REQUIRED) {
   } else {
     state = "PRESENT";
   }
+  console.log(name.padEnd(28) + state);
+}
+
+for (const name of OPTIONAL) {
+  const value = env[name];
+  const state = value === undefined || value === "" ? "absent (optional)" : "PRESENT (optional)";
   console.log(name.padEnd(28) + state);
 }
 

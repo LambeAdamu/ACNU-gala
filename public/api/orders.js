@@ -9,6 +9,7 @@
  * Env: DATABASE_URL, FIREBASE_WEB_API_KEY. */
 
 import pg from "pg";
+import { sendOrderConfirmation } from "./_lib/mail.js";
 
 const { Pool } = pg;
 
@@ -56,6 +57,20 @@ function jsonParse(text) {
     return JSON.parse(text);
   } catch (e) {
     return null;
+  }
+}
+
+/* Send the buyer confirmation e-mail AFTER the INSERT has committed. The
+ * result is intentionally ignored here: a skipped or failed e-mail must never
+ * change the HTTP response or fail the order itself. */
+async function sendConfirmationEmail(order) {
+  try {
+    const result = await sendOrderConfirmation(order);
+    if (result && result.ok && result.messageId) {
+      console.log("orders email sent:", result.messageId);
+    }
+  } catch (e) {
+    console.error("orders email error:", e.message);
   }
 }
 
@@ -225,6 +240,7 @@ export default {
             checked.order.createdAt,
           ]
         );
+        await sendConfirmationEmail(checked.order);
         return Response.json({ ok: true, id: res.rows[0].id });
       } catch (e) {
         console.error("orders POST error:", e);

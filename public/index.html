@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="Gala &amp; Awards 2027 ÃÂ· 3e ÃÂ©dition. CÃÂ©lÃÂ©brer l'excellence, inspirer la jeunesse, faÃÂ§onner les leaders de demain. Par l'Association Camerounaise pour les Nations Unies (ACNU).">
-  <title>Gala &amp; Awards 2027 ÃÂ· ACNU ÃÂ· CÃÂ©lÃÂ©brer l'excellence</title>
+  <meta name="description" content="Gala &amp; Awards 2027 · 3e édition. Célébrer l'excellence, inspirer la jeunesse, façonner les leaders de demain. Par l'Association Camerounaise pour les Nations Unies (ACNU).">
+  <title>Gala &amp; Awards 2027 · ACNU · Célébrer l'excellence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Yellowtail&text=By&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <!-- ============ Gala hero (design recreation) ============ -->
   <!-- Background image: replace public/assets/images/gala_header_background.png to change the photo.
@@ -188,15 +189,27 @@
        Only the accueil view has the dark hero image behind the transparent
        header, so links are white there before scrolling and ink after. On the
        light views (plus the scrolled white bar) they stay ink for contrast. */
+    /* Header foreground color controlled by state */
+    body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) {
+      --header-fg: #ffffff;
+    }
+    .header.is-scrolled,
+    body:has(#view-accueil[hidden]) .header:not(.is-scrolled) {
+      --header-fg: #0b0b0f;
+    }
+
     body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) .nav__link,
     body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) .nav__link:visited,
     body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) .nav__link:hover,
     body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) .nav__link:focus-visible,
     body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) .nav__link.is-active {
-      color: #ffffff;
+      color: var(--header-fg);
     }
     body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled) .nav__link::after {
-      background: #ffffff;
+      background: var(--header-fg);
+    }
+    body:has(#view-accueil:not([hidden])) .header:not(.is-scrolled)::after {
+      background: var(--header-fg);
     }
 
     /* Scrolled (white bar) and the light views: ink menu links. */
@@ -204,7 +217,17 @@
     .header.is-scrolled .nav__link:hover,
     .header.is-scrolled .nav__link:focus-visible,
     .header.is-scrolled .nav__link.is-active {
-      color: #0b0b0f;
+      color: var(--header-fg);
+    }
+    .header.is-scrolled::after {
+      background: var(--header-fg);
+    }
+    .header.is-scrolled .nav__link,
+    .header.is-scrolled .nav__link:visited {
+      transition: color 0.22s var(--ease);
+    }
+    .header::after {
+      transition: opacity var(--hdr-dur) var(--hdr-ease), background-color 0.22s var(--ease);
     }
 
     /* ============ Hide the page scrollbar (scrolling still works) ============ */
@@ -225,7 +248,7 @@
   <!-- ============ Header ============ -->
   <header class="header">
     <div class="container header__inner">
-      <a class="brand" href="#/accueil" aria-label="ACNU Gala &amp; Awards 2027 ÃÂ· accueil">
+      <a class="brand" href="#/accueil" aria-label="ACNU Gala &amp; Awards 2027 · accueil">
         <span class="brand__mark" aria-hidden="true">
           <img src="assets/images/acnu-logo.png" alt="Logo ACNU" width="38" height="38" style="width:100%;height:100%;object-fit:cover">
         </span>
@@ -238,7 +261,7 @@
       <nav id="nav" class="nav" aria-label="Navigation principale">
         <ul class="nav__links">
           <li><a class="nav__link" data-route="accueil" href="#/accueil" data-label-en="Home">Accueil</a></li>
-          <li><a class="nav__link" data-route="apropos" href="#/a-propos" data-label-en="About">Ãâ¬ propos</a></li>
+          <li><a class="nav__link" data-route="apropos" href="#/a-propos" data-label-en="About">À propos</a></li>
           <li><a class="nav__link" data-route="billets" href="#/billets" data-label-en="Pay for tickets">Payer des billets</a></li>
         </ul>
       </nav>
@@ -267,13 +290,13 @@
           <p class="hero__eyebrow">Association Camerounaise<br>pour les Nations Unies</p>
           <h1 class="hero__title hero__title--gala">Gala</h1>
           <p class="hero__tagline">Leadership starts with excellence</p>
-          <p class="hero__lead">Une gÃÂ©nÃÂ©ration engagÃÂ©e pour demain</p>
+          <p class="hero__lead">Une génération engagée pour demain</p>
 
-          <div class="hero__info" role="list" aria-label="Date et lieu de l'ÃÂ©vÃÂ©nement">
+          <div class="hero__info" role="list" aria-label="Date et lieu de l'événement">
             <div class="hero__info-block" role="listitem">
               <svg class="hero__info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
               <span class="hero__info-text">
-                <span class="hero__info-strong">7 fÃÂ©vrier 2027</span>
+                <span class="hero__info-strong">7 février 2027</span>
                 <span class="hero__info-soft">19h00</span>
               </span>
             </div>
@@ -291,11 +314,11 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 100-4V8z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>
               Acheter un billet
             </a>
-            <a class="btn hero__btn hero__btn--outline" href="#/a-propos" aria-label="DÃÂ©couvrir l'ÃÂ©vÃÂ©nement">
+            <a class="btn hero__btn hero__btn--outline" href="#/a-propos" aria-label="Découvrir l'événement">
               <span class="hero__play" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
               </span>
-              DÃÂ©couvrir l'ÃÂ©vÃÂ©nement
+              Découvrir l'événement
             </a>
           </div>
         </div>
@@ -303,7 +326,7 @@
     </section>
 
     <!-- ============ Trust strip ============ -->
-    <div class="trust-strip" aria-label="CrÃÂ©dibilitÃÂ© de l'organisation">
+    <div class="trust-strip" aria-label="Crédibilité de l'organisation">
       <div class="container trust-strip__inner">
         <span class="trust-strip__item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
@@ -311,7 +334,7 @@
         </span>
         <span class="trust-strip__item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><path d="M9 12h6M9 16h4"/></svg>
-          APJC-UN ÃÂ· Parlementaires Juniors du Cameroun
+          APJC-UN · Parlementaires Juniors du Cameroun
         </span>
         <span class="trust-strip__item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg>
@@ -319,39 +342,39 @@
         </span>
         <span class="trust-strip__item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-          Depuis 2014 ÃÂ· membre reconnu des Nations Unies
+          Depuis 2014 · membre reconnu des Nations Unies
         </span>
       </div>
     </div>
 
-    <!-- ============ PrÃÂ©sentation ============ -->
-    <section class="section" id="presentation" aria-label="PrÃÂ©sentation">
+    <!-- ============ Présentation ============ -->
+    <section class="section" id="presentation" aria-label="Présentation">
       <div class="container">
         <div class="sec-head" data-reveal>
-          <p class="kicker">PrÃÂ©sentation gÃÂ©nÃÂ©rale</p>
+          <p class="kicker">Présentation générale</p>
           <h2 class="sec-head__title">Un rendez-vous qui fait grandir la jeunesse</h2>
           <p class="sec-head__lede">
-            Dans un contexte oÃÂ¹ la jeunesse africaine est appelÃÂ©e ÃÂ  jouer un rÃÂ´le stratÃÂ©gique dans le dÃÂ©veloppement
+            Dans un contexte où la jeunesse africaine est appelée à jouer un rôle stratégique dans le développement
             du continent, le <strong>Gala &amp; Awards 2027</strong> se positionne comme un catalyseur d'ambition et d'excellence.
           </p>
         </div>
 
         <div class="grid grid--4">
           <article class="card card--photo" data-reveal style="--card-img: url('assets/images/cards/ceremonie.jpg')">
-            <h3>Une cÃÂ©rÃÂ©monie d'ÃÂ©lite</h3>
-            <p>Une production premium rÃÂ©unissant institutions, mÃÂ©dias et jeunes talents ÃÂ  fort potentiel.</p>
+            <h3>Une cérémonie d'élite</h3>
+            <p>Une production premium réunissant institutions, médias et jeunes talents à fort potentiel.</p>
           </article>
           <article class="card card--photo" data-reveal style="--reveal-delay:.08s; --card-img: url('assets/images/cards/influence.jpg')">
             <h3>Un hub d'influence</h3>
-            <p>Un pont entre ÃÂ©ducation, leadership et opportunitÃÂ©s rÃÂ©elles pour une nouvelle gÃÂ©nÃÂ©ration.</p>
+            <p>Un pont entre éducation, leadership et opportunités réelles pour une nouvelle génération.</p>
           </article>
           <article class="card card--photo" data-reveal style="--reveal-delay:.16s; --card-img: url('assets/images/cards/vitrine.jpg')">
             <h3>Vitrine de performance</h3>
-            <p>Une vitrine d'intelligence, de travail et de discipline dÃÂ¨s le plus jeune ÃÂ¢ge.</p>
+            <p>Une vitrine d'intelligence, de travail et de discipline dès le plus jeune âge.</p>
           </article>
           <article class="card card--photo" data-reveal style="--reveal-delay:.24s; --card-img: url('assets/images/cards/label.jpg')">
             <h3>Label de reconnaissance</h3>
-            <p>Un label de reconnaissance crÃÂ©dible, appuyÃÂ© par des institutions et des dÃÂ©cideurs.</p>
+            <p>Un label de reconnaissance crédible, appuyé par des institutions et des décideurs.</p>
           </article>
         </div>
       </div>
@@ -362,18 +385,18 @@
       <div class="container">
         <div class="sec-head" data-reveal>
           <p class="kicker">Le mot des organisateurs</p>
-          <h2 class="sec-head__title">CÃÂ©lÃÂ©brer le mÃÂ©rite, ouvrir des chemins</h2>
+          <h2 class="sec-head__title">Célébrer le mérite, ouvrir des chemins</h2>
         </div>
 
         <figure class="card organisateur" data-reveal>
           <blockquote class="organisateur__quote">
-            <p>Le Gala &amp; Awards est nÃÂ© d'une conviction : la jeunesse africaine est appelÃÂ©e ÃÂ  jouer un rÃÂ´le stratÃÂ©gique dans le dÃÂ©veloppement du continent. Chaque ÃÂ©dition rassemble institutions, mÃÂ©dias, parents et jeunes talents pour cÃÂ©lÃÂ©brer le mÃÂ©rite acadÃÂ©mique, le leadership et l'engagement citoyen.</p>
-            <p>Nous croyons que la reconnaissance nourrit l'ambition, et que l'ambition, bien accompagnÃÂ©e, devient impact. Ce rendez-vous se veut un catalyseur : un pont entre ÃÂ©ducation, leadership et opportunitÃÂ©s rÃÂ©elles. Ãâ¬ travers plusieurs catÃÂ©gories de prix, nous mettons en lumiÃÂ¨re des parcours qui inspirent et ouvrent la voie ÃÂ  toute une gÃÂ©nÃÂ©ration.</p>
-            <p>Notre objectif est clair : faire du Gala &amp; Awards une rÃÂ©fÃÂ©rence nationale et internationale dans la promotion des jeunes talents. Merci ÃÂ  celles et ceux qui rendent cette cÃÂ©lÃÂ©bration possible.</p>
+            <p>Le Gala &amp; Awards est né d'une conviction : la jeunesse africaine est appelée à jouer un rôle stratégique dans le développement du continent. Chaque édition rassemble institutions, médias, parents et jeunes talents pour célébrer le mérite académique, le leadership et l'engagement citoyen.</p>
+            <p>Nous croyons que la reconnaissance nourrit l'ambition, et que l'ambition, bien accompagnée, devient impact. Ce rendez-vous se veut un catalyseur : un pont entre éducation, leadership et opportunités réelles. À travers plusieurs catégories de prix, nous mettons en lumière des parcours qui inspirent et ouvrent la voie à toute une génération.</p>
+            <p>Notre objectif est clair : faire du Gala &amp; Awards une référence nationale et internationale dans la promotion des jeunes talents. Merci à celles et ceux qui rendent cette célébration possible.</p>
           </blockquote>
           <figcaption class="organisateur__sign">
-            <b>L'ÃÂ©quipe d'organisation ACNU</b>
-            <span class="organisateur__draft">Texte provisoire ÃÂ  valider</span>
+            <b>L'équipe d'organisation ACNU</b>
+            <span class="organisateur__draft">Texte provisoire à valider</span>
           </figcaption>
         </figure>
       </div>
@@ -385,7 +408,7 @@
         <div class="sec-head" data-reveal>
           <p class="kicker">Billetterie</p>
           <h2 class="sec-head__title">Choisissez votre place</h2>
-          <p class="sec-head__lede">Trois catÃÂ©gories de billets pour vivre la cÃÂ©rÃÂ©monie. Places limitÃÂ©es.</p>
+          <p class="sec-head__lede">Trois catégories de billets pour vivre la cérémonie. Places limitées.</p>
         </div>
 
         <div class="tarifs">
@@ -393,7 +416,7 @@
             <p class="tarif__name">Classic</p>
             <h3 class="tarif__title">Billet Classic</h3>
             <p class="tarif__price">15 000 <small>FCFA</small></p>
-            <p class="tarif__meta">DisponibilitÃÂ© : jusqu'ÃÂ  160 places</p>
+            <p class="tarif__meta">Disponibilité : jusqu'à 160 places</p>
             <div class="tarif__cta">
               <a class="btn btn--ghost" href="#/billets" data-pay-cta>Payer des billets</a>
             </div>
@@ -403,7 +426,7 @@
             <p class="tarif__name">VIP</p>
             <h3 class="tarif__title">Billet VIP</h3>
             <p class="tarif__price">25 000 <small>FCFA</small></p>
-            <p class="tarif__meta">DisponibilitÃÂ© : jusqu'ÃÂ  100 places</p>
+            <p class="tarif__meta">Disponibilité : jusqu'à 100 places</p>
             <div class="tarif__cta">
               <a class="btn" href="#/billets" data-pay-cta>Payer des billets</a>
             </div>
@@ -413,7 +436,7 @@
             <p class="tarif__name">Premium</p>
             <h3 class="tarif__title">Billet Premium</h3>
             <p class="tarif__price">300 000 <small>FCFA</small></p>
-            <p class="tarif__meta">DisponibilitÃÂ© : jusqu'ÃÂ  5 places</p>
+            <p class="tarif__meta">Disponibilité : jusqu'à 5 places</p>
             <div class="tarif__cta">
               <a class="btn btn--ghost" href="#/billets" data-pay-cta>Payer des billets</a>
             </div>
@@ -426,13 +449,13 @@
 
     <div class="view" id="view-apropos" data-view="apropos">
 
-    <!-- ============ Ãâ¬ propos ============ -->
-    <section class="section" aria-label="Ãâ¬ propos">
+    <!-- ============ À propos ============ -->
+    <section class="section" aria-label="À propos">
       <div class="container">
         <div class="sec-head apropos-head" data-reveal>
-          <p class="kicker">Ãâ¬ propos</p>
+          <p class="kicker">À propos</p>
           <h1 class="sec-head__title">Notre mission</h1>
-          <p class="apropos-lede">Faire du Gala &amp; Awards une rÃÂ©fÃÂ©rence nationale et internationale dans la promotion des jeunes talents, en crÃÂ©ant un pont entre ÃÂ©ducation, leadership et opportunitÃÂ©s rÃÂ©elles.</p>
+          <p class="apropos-lede">Faire du Gala &amp; Awards une référence nationale et internationale dans la promotion des jeunes talents, en créant un pont entre éducation, leadership et opportunités réelles.</p>
         </div>
       </div>
     </section>
@@ -442,10 +465,10 @@
       <div class="container">
         <div class="sec-head" data-reveal>
           <p class="kicker">Prix &amp; distinctions 2027</p>
-          <h2 class="sec-head__title">Les catÃÂ©gories ÃÂ  l'honneur cette annÃÂ©e</h2>
+          <h2 class="sec-head__title">Les catégories à l'honneur cette année</h2>
           <p class="sec-head__lede">
-            Six prix majeurs valorisent le mÃÂ©rite acadÃÂ©mique, le leadership et l'engagement citoyen.
-            Chaque catÃÂ©gorie peut ÃÂªtre <strong>parrainÃÂ©e par un partenaire</strong> pour y associer son image.
+            Six prix majeurs valorisent le mérite académique, le leadership et l'engagement citoyen.
+            Chaque catégorie peut être <strong>parrainée par un partenaire</strong> pour y associer son image.
           </p>
         </div>
 
@@ -454,24 +477,24 @@
             <div class="listing__head">
               <span class="listing__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
-                MÃÂ©rite
+                Mérite
               </span>
             </div>
-            <h3>Excellence AcadÃÂ©mique</h3>
-            <p class="listing__desc">RÃÂ©compense le mÃÂ©rite scolaire et intellectuel des ÃÂ©lÃÂ¨ves et ÃÂ©tudiants les plus brillants.</p>
-            <p class="listing__winner">Dernier laurÃÂ©at : <b>Ãâ¬ confirmer</b></p>
+            <h3>Excellence Académique</h3>
+            <p class="listing__desc">Récompense le mérite scolaire et intellectuel des élèves et étudiants les plus brillants.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
           <article class="card listing" data-reveal style="--reveal-delay:.08s">
             <div class="listing__head">
               <span class="listing__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
-                Ãâ°galitÃÂ©
+                Égalité
               </span>
             </div>
-            <h3>Excellence FÃÂ©minine</h3>
-            <p class="listing__desc">Met en lumiÃÂ¨re les parcours fÃÂ©minins d'exception dans les ÃÂ©tudes et le leadership.</p>
-            <p class="listing__winner">Dernier laurÃÂ©at : <b>Ãâ¬ confirmer</b></p>
+            <h3>Excellence Féminine</h3>
+            <p class="listing__desc">Met en lumière les parcours féminins d'exception dans les études et le leadership.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
           <article class="card listing" data-reveal style="--reveal-delay:.16s">
@@ -482,8 +505,8 @@
               </span>
             </div>
             <h3>Leadership</h3>
-            <p class="listing__desc">Distingue les jeunes qui incarnent l'impact, la prise de dÃÂ©cision et l'exemple.</p>
-            <p class="listing__winner">Dernier laurÃÂ©at : <b>Ãâ¬ confirmer</b></p>
+            <p class="listing__desc">Distingue les jeunes qui incarnent l'impact, la prise de décision et l'exemple.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
           <article class="card listing" data-reveal style="--reveal-delay:.24s">
@@ -494,52 +517,48 @@
               </span>
             </div>
             <h3>Engagement Citoyen</h3>
-            <p class="listing__desc">Honore les jeunes engagÃÂ©s pour leur communautÃÂ©, la paix et le dÃÂ©veloppement.</p>
-            <p class="listing__winner">Dernier laurÃÂ©at : <b>Ãâ¬ confirmer</b></p>
+            <p class="listing__desc">Honore les jeunes engagés pour leur communauté, la paix et le développement.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
           <article class="card listing" data-reveal style="--reveal-delay:.32s">
             <div class="listing__head">
               <span class="listing__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
-                Ãâ¬ dÃÂ©finir
+                À définir
               </span>
             </div>
-            <h3>CatÃÂ©gorie ÃÂ  dÃÂ©finir</h3>
-            <p class="listing__desc">Description ÃÂ  venir : cette catÃÂ©gorie sera prÃÂ©cisÃÂ©e par l'organisation.</p>
-            <p class="listing__winner">Dernier laurÃÂ©at : <b>Ãâ¬ confirmer</b></p>
+            <h3>Catégorie à définir</h3>
+            <p class="listing__desc">Description à venir : cette catégorie sera précisée par l'organisation.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
 
           <article class="card listing" data-reveal style="--reveal-delay:.4s">
             <div class="listing__head">
               <span class="listing__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
-                Ãâ¬ dÃÂ©finir
+                À définir
               </span>
             </div>
-            <h3>CatÃÂ©gorie ÃÂ  dÃÂ©finir</h3>
-            <p class="listing__desc">Description ÃÂ  venir : cette catÃÂ©gorie sera prÃÂ©cisÃÂ©e par l'organisation.</p>
-            <p class="listing__winner">Dernier laurÃÂ©at : <b>Ãâ¬ confirmer</b></p>
+            <h3>Catégorie à définir</h3>
+            <p class="listing__desc">Description à venir : cette catégorie sera précisée par l'organisation.</p>
+            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
           </article>
-        </div>
-
-        <div class="sec-head" data-reveal style="margin-top:40px; margin-bottom:0">
-          <p class="sec-head__lede">Vous souhaitez associer votre nom ÃÂ  une catÃÂ©gorie ? <a href="mailto:acnubureau.littoral@gmail.com">Parrainer une catÃÂ©gorie</a>.</p>
         </div>
       </div>
     </section>
 
-    <!-- ============ LaurÃÂ©ats (dÃÂ©filement) ============ -->
-    <section class="section" id="laureats" aria-label="LaurÃÂ©ats">
+    <!-- ============ Lauréats (défilement) ============ -->
+    <section class="section" id="laureats" aria-label="Lauréats">
       <div class="container">
         <div class="sec-head" data-reveal>
-          <p class="kicker">Ils ont ÃÂ©tÃÂ© distinguÃÂ©s</p>
-          <h2 class="sec-head__title">Les laurÃÂ©ats</h2>
+          <p class="kicker">Ils ont été distingués</p>
+          <h2 class="sec-head__title">Les lauréats</h2>
         </div>
       </div>
       <div class="marquee" data-marquee>
         <div class="marquee__track" data-marquee-track></div>
-        <p class="marquee-empty" data-marquee-empty>Les laurÃÂ©ats de cette ÃÂ©dition seront annoncÃÂ©s prochainement.</p>
+        <p class="marquee-empty" data-marquee-empty>Les lauréats de cette édition seront annoncés prochainement.</p>
       </div>
     </section>
 
@@ -552,8 +571,8 @@
       <div class="container">
         <div class="sec-head sec-head--center" data-reveal>
           <p class="kicker">Plateforme de paiement ACNU</p>
-          <h2 class="sec-head__title">Soumettez votre paiement</h2>
-          <p class="sec-head__lede">Cette page vous permet d'acheter vos billets pour le Gala & Awards 2027. Le paiement est effectuÃ© d'abord, puis vous soumettez les dÃ©tails et la preuve. Un administrateur vÃ©rifie ensuite votre demande.</p>
+          <h2 class="sec-head__title">Soumettez et suivez votre paiement</h2>
+          <p class="sec-head__lede">Quatre étapes simples : renseignements, numéro de paiement, preuve — puis un identifiant de transaction. <strong>Vérification par l'administrateur</strong> sous 48h.</p>
         </div>
 
         <div id="payApp">
@@ -561,7 +580,7 @@
             <form id="payForm" class="form" novalidate>
               <!-- ============ 1. Contact ============ -->
               <div class="form-section">
-                <h3 class="form-section__title">1 ÃÂ· Contact</h3>
+                <h3 class="form-section__title">1 · Contact</h3>
                 <div class="field" data-err="buyer">
                   <label for="f-buyer">Nom de l'acheteur <span class="req" aria-hidden="true">*</span></label>
                   <input id="f-buyer" type="text" name="buyer" autocomplete="name" required>
@@ -572,7 +591,7 @@
                 </div>
                 <div class="form__row">
                   <div class="field" data-err="tel">
-                    <label for="f-tel">TÃÂ©lÃÂ©phone <span class="req" aria-hidden="true">*</span></label>
+                    <label for="f-tel">Téléphone <span class="req" aria-hidden="true">*</span></label>
                     <input id="f-tel" type="tel" name="tel" autocomplete="tel" inputmode="tel" required>
                     <span class="error" role="alert">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:15px;height:15px"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -590,40 +609,40 @@
                 </div>
               </div>
 
-              <!-- ============ 2. QuantitÃÂ© par type ============ -->
+              <!-- ============ 2. Quantité par type ============ -->
               <div class="form-section">
-                <h3 class="form-section__title">2 ÃÂ· QuantitÃÂ© par type de billet</h3>
+                <h3 class="form-section__title">2 · Quantité par type de billet</h3>
                 <div class="qty-list">
                   <div class="qty-item" data-tier="premium">
                     <div class="qty-item__info">
                       <b>Premium</b>
-                      <small>300 000 FCFA ÃÂ· max 5</small>
+                      <small>300 000 FCFA · max 5</small>
                     </div>
                     <div class="qty-stepper">
-                      <button type="button" class="qty-btn" data-qty="minus" aria-label="RÃÂ©duire Premium">Ã¢Ëâ</button>
-                      <input id="qty-premium" type="number" value="0" min="0" max="5" inputmode="numeric" aria-label="QuantitÃÂ© Premium">
+                      <button type="button" class="qty-btn" data-qty="minus" aria-label="Réduire Premium">−</button>
+                      <input id="qty-premium" type="number" value="0" min="0" max="5" inputmode="numeric" aria-label="Quantité Premium">
                       <button type="button" class="qty-btn" data-qty="plus" aria-label="Augmenter Premium">+</button>
                     </div>
                   </div>
                   <div class="qty-item" data-tier="vip">
                     <div class="qty-item__info">
                       <b>VIP</b>
-                      <small>25 000 FCFA ÃÂ· max 100</small>
+                      <small>25 000 FCFA · max 100</small>
                     </div>
                     <div class="qty-stepper">
-                      <button type="button" class="qty-btn" data-qty="minus" aria-label="RÃÂ©duire VIP">Ã¢Ëâ</button>
-                      <input id="qty-vip" type="number" value="0" min="0" max="100" inputmode="numeric" aria-label="QuantitÃÂ© VIP">
+                      <button type="button" class="qty-btn" data-qty="minus" aria-label="Réduire VIP">−</button>
+                      <input id="qty-vip" type="number" value="0" min="0" max="100" inputmode="numeric" aria-label="Quantité VIP">
                       <button type="button" class="qty-btn" data-qty="plus" aria-label="Augmenter VIP">+</button>
                     </div>
                   </div>
                   <div class="qty-item" data-tier="classic">
                     <div class="qty-item__info">
                       <b>Classique</b>
-                      <small>15 000 FCFA ÃÂ· max 160</small>
+                      <small>15 000 FCFA · max 160</small>
                     </div>
                     <div class="qty-stepper">
-                      <button type="button" class="qty-btn" data-qty="minus" aria-label="RÃÂ©duire Classique">Ã¢Ëâ</button>
-                      <input id="qty-classic" type="number" value="0" min="0" max="160" inputmode="numeric" aria-label="QuantitÃÂ© Classique">
+                      <button type="button" class="qty-btn" data-qty="minus" aria-label="Réduire Classique">−</button>
+                      <input id="qty-classic" type="number" value="0" min="0" max="160" inputmode="numeric" aria-label="Quantité Classique">
                       <button type="button" class="qty-btn" data-qty="plus" aria-label="Augmenter Classique">+</button>
                     </div>
                   </div>
@@ -632,15 +651,15 @@
 
               <!-- ============ 3. Noms des participants ============ -->
               <div class="form-section" id="participantsSection">
-                <h3 class="form-section__title">3 ÃÂ· Noms des participants</h3>
-                <p class="form-section__hint">Les champs apparaissent selon les quantitÃÂ©s choisies ci-dessus.</p>
+                <h3 class="form-section__title">3 · Noms des participants</h3>
+                <p class="form-section__hint">Les champs apparaissent selon les quantités choisies ci-dessus.</p>
                 <div id="participantsList"></div>
               </div>
 
               <!-- ============ 4. Paiement ============ -->
               <div class="form-section">
-                <h3 class="form-section__title">4 ÃÂ· Paiement</h3>
-                <p class="form-section__hint">Choisissez votre moyen de paiement, effectuez le virement vers le numÃÂ©ro affichÃÂ©, puis joignez la preuve ci-dessous.</p>
+                <h3 class="form-section__title">4 · Paiement</h3>
+                <p class="form-section__hint">Choisissez votre moyen de paiement, effectuez le virement vers le numéro affiché, puis joignez la preuve ci-dessous.</p>
                 <div class="pay-methods" role="radiogroup" aria-label="Moyen de paiement">
                   <label class="pay-method is-selected">
                     <h4>
@@ -649,13 +668,13 @@
                       Mobile Money (MoMo)
                     </h4>
                     <div class="ref">
-                      <span id="payRefMoMo" data-raw="678613421">678 61 34 21</span>
-                      <button type="button" data-copy="payRefMoMo" aria-label="Copier le numÃÂ©ro Mobile Money">
+                      <span id="payRefMoMo" data-raw="672691175">672 69 11 75</span>
+                      <button type="button" data-copy="payRefMoMo" aria-label="Copier le numéro Mobile Money">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                         Copier
                       </button>
                     </div>
-                    <p class="pay-method__name">Nom : <b>BUZUAH STELMON-LYDIA</b></p>
+                    <p class="pay-method__name">Nom : <b>Ngadeu Michel Roger</b></p>
                   </label>
 
                   <label class="pay-method">
@@ -665,36 +684,36 @@
                       Orange Money (OM)
                     </h4>
                     <div class="ref">
-                      <span id="payRefOM" data-raw="686410795">686 41 07 95</span>
-                      <button type="button" data-copy="payRefOM" aria-label="Copier le numÃÂ©ro Orange Money">
+                      <span id="payRefOM" data-raw="691708430">691 70 84 30</span>
+                      <button type="button" data-copy="payRefOM" aria-label="Copier le numéro Orange Money">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                         Copier
                       </button>
                     </div>
-                    <p class="pay-method__name">Nom : <b>Virginie Florence</b></p>
+                    <p class="pay-method__name">Nom : <b>Ngadeu Michel Roger</b></p>
                   </label>
                 </div>
                 <div class="pay-total">
-                  <span>Total ÃÂ  payer</span>
+                  <span>Total à payer</span>
                   <b id="payTotal">0 FCFA</b>
                 </div>
               </div>
 
               <!-- ============ 5. Preuve de paiement ============ -->
               <div class="form-section">
-                <h3 class="form-section__title">5 ÃÂ· Preuve de paiement</h3>
+                <h3 class="form-section__title">5 · Preuve de paiement</h3>
                 <div class="field" data-err="proof">
-                  <div id="uploadZone" class="upload" role="button" tabindex="0" aria-label="TÃÂ©lÃÂ©verser la preuve de paiement">
+                  <div id="uploadZone" class="upload" role="button" tabindex="0" aria-label="Téléverser la preuve de paiement">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4"/><path d="M4 20h16"/></svg>
                     <b>Cliquez pour joindre votre preuve</b>
-                    <span>PNG, JPG, WebP ou PDF ÃÂ· 8 Mo max</span>
+                    <span>PNG, JPG, WebP ou PDF · 8 Mo max</span>
                     <input id="f-proof" type="file" name="proof" accept="image/png,image/jpeg,image/webp,application/pdf">
                   </div>
                   <div id="filePreview" class="file-preview" hidden>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>
                     <div>
-                      <span class="file-preview__name">Ã¢â¬â</span>
-                      <span class="file-preview__size">Ã¢â¬â</span>
+                      <span class="file-preview__name">—</span>
+                      <span class="file-preview__size">—</span>
                     </div>
                   </div>
                   <span class="error" role="alert">
@@ -705,12 +724,12 @@
 
                 <p class="form__note">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 4v5c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V7l7-4z"/></svg>
-                  Votre preuve est transmise en toute sÃÂ©curitÃÂ© au Payment Administrator pour vÃÂ©rification.
+                  Votre preuve est transmise en toute sécurité au Payment Administrator pour vérification.
                 </p>
               </div>
 
               <button class="btn" type="submit" id="paySubmit" style="width:100%">
-                Soumettre ma dÃÂ©claration de paiement
+                Soumettre ma déclaration de paiement
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
               </button>
             </form>
@@ -722,8 +741,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
             <h3>Merci !</h3>
-            <p>Votre transaction a ÃÂ©tÃÂ© prise en compte. La rÃÂ©ception des fonds sera vÃÂ©rifiÃÂ©e, puis vos billets vous seront envoyÃÂ©s par email.</p>
-            <p id="paySpamNote" class="pay-done__note" hidden></p>
+            <p>Votre transaction a été prise en compte. La réception des fonds sera vérifiée, puis vos billets vous seront envoyés par email.</p>
             <button class="btn" type="button" id="payReset" style="margin-top:22px">Acheter plus de billets</button>
           </div>
         </div>
@@ -732,63 +750,53 @@
     </div><!-- /#view-billets -->
   </main>
 
-  <div id="payModalBackdrop" class="pay-backdrop" hidden></div>
-  <div id="payModal" class="pay-modal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle" tabindex="-1" hidden>
-    <div class="pay-modal__inner">
-      <h2 id="payModalTitle" class="pay-modal__title">Confirmez votre adresse e-mail</h2>
-      <p class="pay-modal__text">Votre confirmation de commande sera envoyÃÂ©e ÃÂ  l'adresse suivante :</p>
-      <p class="pay-modal__email" id="payModalEmail"></p>
-      <p class="pay-modal__hint">VÃÂ©rifiez qu'elle est correcte : une adresse erronÃÂ©e vous empÃÂªchera de recevoir votre confirmation.</p>
-      <div class="pay-modal__actions">
-        <button type="button" class="btn btn--ghost" id="payModalCancel">Annuler</button>
-        <button type="button" class="btn" id="payModalConfirm">Valider et envoyer</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ============ Footer ============ -->
   <footer class="footer">
     <div class="container">
       <div class="footer__grid">
-        <div class="footer__brand">
-          <a class="brand" href="#/accueil" aria-label="ACNU Gala &amp; Awards 2027 ÃÂ· retour en haut">
-            <span class="brand__mark" aria-hidden="true">
-              <img src="assets/images/acnu-logo.png" alt="Logo ACNU" width="38" height="38" style="width:100%;height:100%;object-fit:cover">
-            </span>
-            <span>ACNU Gala &amp; Awards<span class="brand__sub">2027</span></span>
-          </a>
-          <p>CÃÂ©lÃÂ©brer l'excellence. Inspirer la jeunesse. FaÃÂ§onner les leaders de demain.</p>
+        <div class="footer__col footer__col--brand">
+          <p class="footer__title">Gala &amp;<br>Awards 2027</p>
+          <div class="footer__by-row">
+            <span class="footer__by">By</span>
+            <img class="footer__logo" src="assets/images/acnu-logo.png" alt="Logo ACNU">
+          </div>
+          <p class="footer__org">Association Camerounaise pour les Nations Unies</p>
         </div>
 
-        <nav aria-label="Navigation pied de page">
-          <h4>Navigation</h4>
-          <ul class="footer__links">
-            <li><a href="#/accueil">Accueil</a></li>
-            <li><a href="#/a-propos">Ãâ¬ propos</a></li>
-            <li><a href="#prix">Prix &amp; distinctions</a></li>
-            <li><a href="#/billets" data-pay-cta>Payer des billets</a></li>
-            <li><a href="admin.html">Espace administrateur</a></li>
-          </ul>
-        </nav>
+        <div class="footer__col footer__col--nav">
+          <nav aria-label="Navigation du pied de page">
+            <h4>Navigation</h4>
+            <ul class="footer__links">
+              <li><a href="#/accueil">Accueil</a></li>
+              <li><a href="#/a-propos">À propos</a></li>
+              <li><a href="#/billets">Payer des billets</a></li>
+            </ul>
+          </nav>
+        </div>
 
-        <nav aria-label="Liens utiles">
-          <h4>Liens utiles</h4>
-          <ul class="footer__links">
-            <li><a href="mailto:acnubureau.littoral@gmail.com">Contact</a></li>
-            <li><a href="https://www.for-un.com" rel="noopener">www.for-un.com</a></li>
-            <li><a href="mailto:acnubureau.littoral@gmail.com">acnubureau.littoral@gmail.com</a></li>
-          </ul>
-        </nav>
-
-        <div>
-          <h4>Coordination</h4>
-          <ul class="footer__links">
-            <li><a href="tel:+237693304142">+237 693 304 142</a></li>
-            <li><a href="tel:+237672691175">+237 672 691 175</a></li>
-            <li><a href="tel:+237691548448">+237 691 548 448</a></li>
-            <li><a href="tel:+237620944808">+237 620 944 808</a></li>
-            <li>Coordination joignable de 8h ÃÂ  18h, 7j/7.</li>
-          </ul>
+        <div class="footer__col footer__col--contact">
+          <nav class="footer__social" aria-label="Réseaux sociaux ACNU">
+            <a href="https://whatsapp.com/channel/0029VbBRZmiKgsNl45oa2802" target="_blank" rel="noopener noreferrer" aria-label="ACNU sur WhatsApp">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            </a>
+            <a href="https://www.tiktok.com/@acnutiktok?_r=1&amp;_t=ZS-9B8gCv97xn6" target="_blank" rel="noopener noreferrer" aria-label="ACNU sur TikTok">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/share/1C9ZY2e8xE/" target="_blank" rel="noopener noreferrer" aria-label="ACNU sur Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/acnucameroun_littoral?exln=NW1hd2Z5NXR3Y2Vx" target="_blank" rel="noopener noreferrer" aria-label="ACNU sur Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+            </a>
+          </nav>
+          <a class="footer__contact-row" href="mailto:acnubureau.littoral@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+            <span>acnubureau.littoral@gmail.com</span>
+          </a>
+          <a class="footer__contact-row" href="https://www.for-un.com" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            <span>www.for-un.com</span>
+          </a>
         </div>
       </div>
     </div>

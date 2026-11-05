@@ -12,8 +12,8 @@
   };
 
   const PAY_METHODS = {
-    momomo: { label: "Mobile Money (MoMo)", number: "678613421", name: "BUZUAH STELMON-LYDIA" },
-    orange: { label: "Orange Money (OM)", number: "686410795", name: "Virginie Florence" },
+    momomo: { label: "Mobile Money (MoMo)", number: "672691175", name: "Ngadeu Michel Roger" },
+    orange: { label: "Orange Money (OM)", number: "691708430", name: "Ngadeu Michel Roger" },
   };
   let selectedPay = "momomo";
   const TIER_ORDER = ["premium", "vip", "classic"];
@@ -317,8 +317,6 @@
     } finally {
       clearTimeout(timer);
     }
-  }
-
   }
 
   let modalState = {

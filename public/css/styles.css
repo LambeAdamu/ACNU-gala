@@ -689,6 +689,29 @@ p {
 
 .sec-head__lede strong { color: var(--gold-2); }
 
+.sec-head--compact { margin-bottom: clamp(24px, 3vw, 40px); }
+
+.pay-how {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.pay-how li { display: flex; gap: 5px; }
+.pay-how b { flex: none; color: var(--gold-2); font-weight: 700; }
+
+@media (max-width: 640px) {
+  .pay-how { grid-template-columns: 1fr; gap: 4px; }
+}
+
 /* ============ Glass cards grid ============ */
 .grid {
   display: grid;

@@ -569,10 +569,16 @@
     <!-- ============ Paiement / billetterie ============ -->
     <section class="section" id="paiement" aria-label="Paiement en ligne">
       <div class="container">
-        <div class="sec-head sec-head--center" data-reveal>
+        <div class="sec-head sec-head--center sec-head--compact" data-reveal>
           <p class="kicker">Plateforme de paiement ACNU</p>
           <h2 class="sec-head__title">Soumettez et suivez votre paiement</h2>
-          <p class="sec-head__lede">Quatre étapes simples : renseignements, numéro de paiement, preuve — puis un identifiant de transaction. <strong>Vérification par l'administrateur</strong> sous 48h.</p>
+          <ol class="pay-how" aria-label="Comment ça marche">
+            <li><b>1.</b> Remplissez vos informations et choisissez vos billets.</li>
+            <li><b>2.</b> Payez par MoMo ou OM et joignez la preuve.</li>
+            <li><b>3.</b> E-mail : commande reçue, en attente de confirmation.</li>
+            <li><b>4.</b> Validation sous 48h.</li>
+            <li><b>5.</b> Billets reçus par e-mail.</li>
+          </ol>
         </div>
 
         <div id="payApp">
@@ -742,6 +748,7 @@
             </div>
             <h3>Merci !</h3>
             <p>Votre transaction a été prise en compte. La réception des fonds sera vérifiée, puis vos billets vous seront envoyés par email.</p>
+            <p id="paySpamNote" class="pay-done__note" hidden></p>
             <button class="btn" type="button" id="payReset" style="margin-top:22px">Acheter plus de billets</button>
           </div>
         </div>
@@ -749,6 +756,20 @@
     </section>
     </div><!-- /#view-billets -->
   </main>
+
+  <div id="payModalBackdrop" class="pay-backdrop" hidden></div>
+  <div id="payModal" class="pay-modal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle" tabindex="-1" hidden>
+    <div class="pay-modal__inner">
+      <h2 id="payModalTitle" class="pay-modal__title">Confirmez votre adresse e-mail</h2>
+      <p class="pay-modal__text">Votre confirmation de commande sera envoyée à l'adresse suivante :</p>
+      <p class="pay-modal__email" id="payModalEmail"></p>
+      <p class="pay-modal__hint">Vérifiez que cette adresse est valide et que vous y avez bien accès : une adresse erronée vous empêchera de recevoir votre confirmation et vos billets.</p>
+      <div class="pay-modal__actions">
+        <button type="button" class="btn btn--ghost" id="payModalCancel">Annuler</button>
+        <button type="button" class="btn" id="payModalConfirm">Valider et envoyer</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ Footer ============ -->
   <footer class="footer">

@@ -9,7 +9,10 @@
  * Env: DATABASE_URL, FIREBASE_WEB_API_KEY. */
 
 import pg from "pg";
-import { sendOrderConfirmation } from "./_lib/mail.js";
+import {
+  sendOrderConfirmation,
+  sendAdminNewTransactionEmail,
+} from "./_lib/mail.js";
 
 const { Pool } = pg;
 
@@ -60,17 +63,52 @@ function jsonParse(text) {
   }
 }
 
-/* Send the buyer confirmation e-mail AFTER the INSERT has committed. The
- * result is intentionally ignored here: a skipped or failed e-mail must never
- * change the HTTP response or fail the order itself. */
-async function sendConfirmationEmail(order) {
+/* More than five orders from the same address in ten minutes means the admin
+ * notification is skipped, but the order is still saved. */
+async function isAdminEmailThrottled(email, reference) {
   try {
-    const result = await sendOrderConfirmation(order);
-    if (result && result.ok && result.messageId) {
-      console.log("orders email sent:", result.messageId);
-    }
+    const { rows } = await pool.query(
+      `SELECT COUNT(*)::int AS count
+         FROM transactions
+        WHERE lower(email) = lower($1)
+          AND id <> $2
+          AND created_at >= now() - interval '10 minutes'`,
+      [email, reference]
+    );
+    return Boolean(rows[0] && rows[0].count > 5);
   } catch (e) {
-    console.error("orders email error:", e.message);
+    const code = e && e.code ? e.code : "unknown";
+    if (code === "42703") {
+      console.warn(
+        "order " + reference + " admin email throttle skipped: no created_at column"
+      );
+    } else {
+      console.error(
+        "order " + reference + " admin email throttle check failed code=" + code
+      );
+    }
+    return false;
+  }
+}
+
+/* Send the e-mails AFTER the INSERT has committed. The result is intentionally
+ * ignored here: a skipped or failed e-mail must never change the HTTP response
+ * or fail the order itself. */
+async function notifyNewOrder(order) {
+  const reference = order && order.id ? String(order.id) : "unknown";
+  try {
+    const jobs = [sendOrderConfirmation(order)];
+    if (await isAdminEmailThrottled(order.email, reference)) {
+      console.warn("order " + reference + " admin email skipped: throttled");
+    } else {
+      jobs.push(sendAdminNewTransactionEmail(order));
+    }
+    await Promise.allSettled(jobs);
+  } catch (e) {
+    console.error(
+      "order " + reference + " mail failed code=" +
+        (e && e.code ? e.code : "unknown")
+    );
   }
 }
 
@@ -240,7 +278,7 @@ export default {
             checked.order.createdAt,
           ]
         );
-        await sendConfirmationEmail(checked.order);
+        await notifyNewOrder(checked.order);
         return Response.json({ ok: true, id: res.rows[0].id });
       } catch (e) {
         console.error("orders POST error:", e);

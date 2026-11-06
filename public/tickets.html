@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Billet — ACNU Gala &amp; Awards 2027</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <main class="section">
+    <div class="container">
+      <div class="panel" style="max-width:720px; margin:0 auto; padding:28px">
+        <p class="kicker">ACNU Gala &amp; Awards 2027</p>
+        <h1 class="sec-head__title" style="font-size:clamp(1.6rem, 4vw, 2.4rem)">Votre billet</h1>
+        <p class="form-section__hint" id="ticketStatus" role="status" aria-live="polite">Chargement…</p>
+
+        <div id="ticketContent" hidden>
+          <div style="display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; margin-top:18px">
+            <div style="flex:0 0 auto">
+              <img id="ticketQr" alt="QR code du billet" width="220" height="220"
+                   style="display:block; background:#fff; padding:12px; border-radius:12px; border:1px solid #e5e0d8">
+            </div>
+            <div style="flex:1 1 240px; min-width:220px">
+              <p id="ticketTier" style="font-family:var(--font-display); font-size:1.35rem; margin:0 0 6px"></p>
+              <p id="ticketName" style="margin:0 0 6px; font-weight:600"></p>
+              <p id="ticketRef" style="margin:0 0 6px; color:var(--ink-3)"></p>
+              <p id="ticketEvent" style="margin:0 0 6px; color:var(--ink-3)"></p>
+              <p id="ticketDate" style="margin:0 0 6px; color:var(--ink-3)"></p>
+              <p id="ticketState" style="margin:14px 0 0; font-weight:600"></p>
+            </div>
+          </div>
+          <p class="form-section__hint" style="margin-top:22px">Présentez ce QR code à l'entrée ou téléchargez votre billet en PDF. Chaque billet est valable une seule fois.</p>
+          <p id="ticketPdfWrap" style="margin-top:16px" hidden>
+            <a id="ticketPdf" class="btn" href="#" download>Télécharger le billet en PDF</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>
+    (function () {
+      const statusEl = document.getElementById("ticketStatus");
+      const content = document.getElementById("ticketContent");
+      const match = location.pathname.match(/^\/t\/([^/]+)\/?$/);
+      const code = match ? decodeURIComponent(match[1]).toUpperCase() : "";
+
+      const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+
+      const formatDate = (value) => {
+        if (!value) return "—";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "—";
+        return new Intl.DateTimeFormat("fr-FR", {
+          dateStyle: "long",
+          timeStyle: "short",
+          timeZone: "Africa/Douala",
+        }).format(date);
+      };
+
+      if (!/^[0-9A-HJKMNP-TV-Z]{16}$/.test(code)) {
+        statusEl.textContent = "Billet introuvable.";
+        return;
+      }
+
+      fetch("/api/tickets/" + encodeURIComponent(code), {
+        headers: { Accept: "application/json" },
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.ok) {
+            throw new Error(data.error || "Billet introuvable.");
+          }
+          return data;
+        })
+        .then((data) => {
+          const ticket = data.ticket;
+          const event = data.event || {};
+
+          statusEl.textContent =
+            ticket.status === "used"
+              ? "Billet déjà utilisé"
+              : ticket.status === "revoked"
+                ? "Billet annulé"
+                : "Billet valide";
+
+          setText("ticketTier", ticket.tierLabel);
+          setText("ticketName", ticket.participantName);
+          setText("ticketRef", "Référence : " + ticket.transactionId);
+          setText(
+            "ticketEvent",
+            [event.dateLabel, event.venue].filter(Boolean).join(" · ")
+          );
+          setText("ticketDate", "Émis le " + formatDate(ticket.issuedAt));
+          setText(
+            "ticketState",
+            ticket.status === "used"
+              ? "Utilisé le " + formatDate(ticket.usedAt)
+              : ticket.status === "revoked"
+                ? "Ce billet a été annulé."
+                : "Valable une seule fois."
+          );
+
+          const qr = document.getElementById("ticketQr");
+          qr.src =
+            data.qrUrl ||
+            "/api/tickets/" + encodeURIComponent(code) + "?format=qr";
+          if (ticket.status !== "valid") qr.style.opacity = "0.35";
+
+          const pdf = document.getElementById("ticketPdf");
+          const pdfWrap = document.getElementById("ticketPdfWrap");
+          if (pdf && pdfWrap) {
+            if (data.pdfUrl && ticket.status !== "revoked") {
+              pdf.href = data.pdfUrl;
+              pdfWrap.hidden = false;
+            } else {
+              pdfWrap.hidden = true;
+            }
+          }
+
+          content.hidden = false;
+        })
+        .catch((error) => {
+          statusEl.textContent = error.message || "Billet introuvable.";
+        });
+    })();
+  </script>
+</body>
+</html>

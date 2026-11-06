@@ -6,7 +6,15 @@
   "type": "commonjs",
   "scripts": {
     "create-admin": "node admin-create-user.js",
-    "env:check": "node scripts/env-check.js"
+    "env:check": "node scripts/env-check.js",
+    "mail:test": "node --env-file-if-exists=.env scripts/mail-test.mjs",
+    "qr:test": "node --env-file-if-exists=.env scripts/qr-test.mjs",
+    "pass:preview": "node scripts/pass-preview.mjs",
+    "db:verify": "node --env-file-if-exists=.env scripts/db-verify.mjs",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.mjs",
+    "tickets:verify": "node --env-file-if-exists=.env scripts/tickets-verify.mjs",
+    "tickets:backfill": "node --env-file-if-exists=.env scripts/tickets-backfill.mjs",
+    "rewrite:test": "node scripts/check-rewrite.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",

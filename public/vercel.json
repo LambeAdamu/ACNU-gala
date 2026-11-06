@@ -1,5 +1,11 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" }
-  ]
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/t/:code", "destination": "/tickets.html" }
+  ],
+  "functions": {
+    "api/tickets/[code].js": {
+      "includeFiles": "api/_lib/assets/**"
+    }
+  }
 }

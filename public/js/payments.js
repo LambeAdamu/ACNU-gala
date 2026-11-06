@@ -17,6 +17,7 @@
   };
   let selectedPay = "momomo";
   const TIER_ORDER = ["premium", "vip", "classic"];
+  const TICKETS_PER_UNIT = { premium: 8, vip: 1, classic: 1 };
   const participantCache = {}; // key like "premium:0" -> entered name
 
   const form = document.getElementById("payForm");
@@ -39,7 +40,11 @@
     input.dispatchEvent(new Event("change"));
   };
 
-  const totalQty = () => TIER_ORDER.reduce((s, t) => s + getQty(t), 0);
+  const ticketCount = (tier) => getQty(tier) * TICKETS_PER_UNIT[tier];
+
+  const totalUnits = () => TIER_ORDER.reduce((s, t) => s + getQty(t), 0);
+
+  const totalTickets = () => TIER_ORDER.reduce((s, t) => s + ticketCount(t), 0);
 
   const totalAmount = () => TIER_ORDER.reduce((s, t) => s + getQty(t) * TIERS[t].price, 0);
 
@@ -58,11 +63,15 @@
 
     const html = [];
     TIER_ORDER.forEach((tier) => {
-      for (let i = 0; i < getQty(tier); i++) {
+      for (let i = 0; i < ticketCount(tier); i++) {
         const key = tier + ":" + i;
+        const label =
+          tier === "premium"
+            ? `Nom — Premium table ${Math.floor(i / TICKETS_PER_UNIT.premium) + 1} · place ${(i % TICKETS_PER_UNIT.premium) + 1}`
+            : `Nom — ${TIERS[tier].label} ${i + 1}`;
         html.push(
           `<div class="participant-field">
-            <span class="participant-field__label">Nom — ${TIERS[tier].label} ${i + 1}</span>
+            <span class="participant-field__label">${label}</span>
             <input type="text" class="participant-name" data-name-key="${key}" autocomplete="off" placeholder="Nom du participant ${i + 1}">
           </div>`
         );
@@ -234,7 +243,7 @@
     if (tel.replace(/\D/g, "").length < 8) { setErr("tel", "Numéro de téléphone invalide."); ok = false; } else clearErr("tel");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { setErr("email", "Adresse e-mail invalide."); ok = false; } else clearErr("email");
 
-    if (totalQty() === 0) {
+    if (totalTickets() === 0) {
       Toast.show("Veuillez sélectionner au moins un billet.", "err");
       ok = false;
     } else {
@@ -246,10 +255,10 @@
 
     // all participant fields must be filled when tickets are selected
     const names = [];
-    if (totalQty() > 0) {
+    if (totalTickets() > 0) {
       let allFilled = true;
       TIER_ORDER.forEach((tier) => {
-        for (let i = 0; i < getQty(tier); i++) {
+        for (let i = 0; i < ticketCount(tier); i++) {
           const key = tier + ":" + i;
           const v = (participantCache[key] || "").trim();
           names.push({ tier, key, name: v });
@@ -471,7 +480,7 @@
     const participants = [];
     const namesArr = [];
     TIER_ORDER.forEach((tier) => {
-      for (let i = 0; i < getQty(tier); i++) {
+      for (let i = 0; i < ticketCount(tier); i++) {
         const key = tier + ":" + i;
         const v = (participantCache[key] || "");
         namesArr.push({ tier, key, name: v });
@@ -487,7 +496,7 @@
       email: email,
       tel: tel,
       tickets: tickets,
-      qty: totalQty(),
+      qty: totalUnits(),
       tier: dominant,
       participants: participants,
       amount: totalAmount(),

@@ -6,6 +6,12 @@
  * Env: DATABASE_URL, FIREBASE_WEB_API_KEY. */
 
 import pg from "pg";
+import { sendBuyerApprovalEmail } from "../_lib/mail.js";
+import {
+  issueTicketsForOrder,
+  revokeTicketsForOrder,
+  TIER_LABELS,
+} from "../_lib/tickets.js";
 
 const { Pool } = pg;
 
@@ -26,6 +32,29 @@ function jsonParse(text) {
   } catch (e) {
     return null;
   }
+}
+
+function toMailOrder(row, issuedTickets = []) {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    tel: row.tel,
+    tickets: row.tickets || [],
+    qty: row.qty,
+    tier: row.tier,
+    participants: row.participants || [],
+    amount: row.amount,
+    payMethod: row.pay_method,
+    ref: row.ref,
+    createdAt: row.created_at,
+    issuedTickets: issuedTickets.map((ticket) => ({
+      code: ticket.code,
+      tier: ticket.tier,
+      participantName: ticket.participant_name,
+      status: ticket.status,
+    })),
+  };
 }
 
 async function verifyAdmin(request) {
@@ -58,6 +87,91 @@ async function verifyAdmin(request) {
   }
 }
 
+/* Atomically read the previous status, update the row and detect the
+ * pending/rejected -> approved transition. The thank-you e-mail is sent only
+ * when that transition actually happened, so a repeated approval sends once. */
+export async function runDecision({
+  db,
+  id,
+  status,
+  decidedBy,
+  decidedAt,
+  sendApprovalEmail = sendBuyerApprovalEmail,
+  issueTickets = issueTicketsForOrder,
+  revokeTickets = revokeTicketsForOrder,
+}) {
+  let client;
+  let previousStatus;
+  let updatedRow;
+  let issuedTickets = [];
+
+  try {
+    client = await db.connect();
+    await client.query("BEGIN");
+    const current = await client.query(
+      "SELECT * FROM transactions WHERE id = $1 FOR UPDATE",
+      [id]
+    );
+    if (!current.rows.length) {
+      await client.query("ROLLBACK");
+      return { notFound: true };
+    }
+    previousStatus = current.rows[0].status;
+    const updated = await client.query(
+      `UPDATE transactions SET status = $2, decided_by = $3, decided_at = $4
+       WHERE id = $1 RETURNING *`,
+      [id, status, decidedBy, decidedAt]
+    );
+    updatedRow = updated.rows[0];
+
+    if (status === "approved" && previousStatus !== "approved" && updatedRow) {
+      const issuance = await issueTickets(client, updatedRow);
+      if (!issuance.ok) {
+        await client.query("ROLLBACK");
+        return {
+          capacity: issuance.error === "CAPACITY",
+          tier: issuance.tier,
+          remaining: issuance.remaining,
+          error: issuance.error,
+        };
+      }
+      issuedTickets = issuance.tickets || [];
+    } else if (status !== "approved" && previousStatus === "approved") {
+      await revokeTickets(client, id);
+    }
+
+    await client.query("COMMIT");
+  } catch (e) {
+    if (client) {
+      try {
+        await client.query("ROLLBACK");
+      } catch (rollbackError) {
+        /* ignore */
+      }
+    }
+    console.error(
+      "order " + id + " decision failed code=" +
+        (e && e.code ? e.code : "unknown")
+    );
+    return { error: true };
+  } finally {
+    if (client) client.release();
+  }
+
+  if (status === "approved" && previousStatus !== "approved" && updatedRow) {
+    try {
+      await sendApprovalEmail(toMailOrder(updatedRow, issuedTickets));
+    } catch (e) {
+      console.error(
+        "order " + id + " buyer email failed code=" +
+          (e && e.code ? e.code : "unknown")
+      );
+    }
+  }
+
+  return { ok: true, issuedTickets: issuedTickets.length };
+}
+
 export default {
   async fetch(request) {
     if (request.method !== "PATCH") {
@@ -81,19 +195,35 @@ export default {
     const decidedBy = String(body.decidedBy || "").trim() || "Admin ACNU";
     const decidedAt = (body && body.decidedAt) ? String(body.decidedAt) : new Date().toISOString();
 
-    try {
-      const res = await pool.query(
-        `UPDATE transactions SET status = $2, decided_by = $3, decided_at = $4
-         WHERE id = $1 RETURNING id, status, decided_by, decided_at`,
-        [id, status, decidedBy, decidedAt]
+    const result = await runDecision({
+      db: pool,
+      id,
+      status,
+      decidedBy,
+      decidedAt,
+    });
+    if (result.notFound) {
+      return Response.json({ ok: false, error: "Transaction introuvable." }, { status: 404 });
+    }
+    if (result.capacity) {
+      const tierLabel = TIER_LABELS[result.tier] || result.tier;
+      return Response.json(
+        {
+          ok: false,
+          error: `Capacité insuffisante (${tierLabel}).`,
+          tier: result.tier,
+          remaining: result.remaining,
+        },
+        { status: 409 }
       );
-      if (!res.rows.length) {
-        return Response.json({ ok: false, error: "Transaction introuvable." }, { status: 404 });
-      }
-      return Response.json({ ok: true, id });
-    } catch (e) {
-      console.error("orders/[id] PATCH error:", e);
+    }
+    if (result.error) {
       return Response.json({ ok: false, error: "Mise à jour impossible." }, { status: 500 });
     }
+    return Response.json({
+      ok: true,
+      id,
+      issuedTickets: result.issuedTickets || 0,
+    });
   },
 };

@@ -12,6 +12,7 @@ const {
   EVENT_LINE,
   buildAdminEmail,
   buildBuyerApprovalEmail,
+  buildOrderConfirmationEmail,
   sendAdminNewTransactionEmail,
   sendBuyerApprovalEmail,
 } = await import("../public/api/_lib/mail.js");
@@ -38,6 +39,29 @@ const order = {
   proofUrl: "https://res.cloudinary.com/demo/image/upload/proof.png",
   createdAt: "2026-11-10T13:32:00.000Z",
 };
+
+const issuedTickets = [
+  {
+    code: "ABCDEFGHJKMNPQRS",
+    tier: "vip",
+    participantName: "Alice",
+    status: "valid",
+  },
+  {
+    code: "23456789ABCDEFGH",
+    tier: "classic",
+    participantName: "Carol",
+    status: "valid",
+  },
+];
+
+function cidReferences(html) {
+  return [...new Set([...html.matchAll(/cid:[a-z0-9-]+/gi)].map((m) => m[0]))];
+}
+
+function cidAttachments(mail) {
+  return new Set((mail.attachments || []).map((asset) => `cid:${asset.cid}`));
+}
 
 test("admin subject, amount formatting and Douala date", () => {
   const mail = buildAdminEmail(order);
@@ -70,20 +94,83 @@ test("buyer-supplied values are escaped in HTML and separate in plain text", () 
   assert.ok(mail.text.includes('<script>alert("x")</script> Evil'));
 });
 
-test("buyer thank-you subject, event line and ticket lines", () => {
-  const mail = buildBuyerApprovalEmail(order);
+test("buyer thank-you subject, event line, ticket lines and CID branding", async () => {
+  const mail = await buildBuyerApprovalEmail(order);
   assert.equal(
     mail.subject,
-    "Votre paiement est validé — Gala & Awards 2027 (TX-ABC123)"
+    "Votre paiement est validé — Gala & Awards 2027"
   );
   assert.ok(mail.text.includes("• 2 × VIP — Alice, Bob <b>"));
   assert.ok(mail.text.includes("• 1 × Classique — Carol"));
   assert.ok(mail.text.includes(`Rendez-vous le ${EVENT_LINE}.`));
-  assert.ok(!/<img/i.test(mail.html));
+  assert.ok(mail.html.includes('src="cid:acnu-logo"'));
+  assert.ok(mail.html.includes('background="cid:acnu-wm-light"'));
+  assert.ok(mail.html.includes("prefers-color-scheme: dark"));
+  assert.ok(mail.html.includes("cid:acnu-wm-dark"));
+  assert.equal(mail.attachments.length, 3);
+  assert.deepEqual(
+    mail.attachments.map((asset) => asset.filename).sort(),
+    ["logo.png", "watermark-dark.png", "watermark-light.png"]
+  );
+  assert.ok(mail.attachments.every((asset) => asset.contentDisposition === "inline"));
+  assert.ok(mail.attachments.every((asset) => asset.contentType === "image/png"));
+  const imageSources = [...mail.html.matchAll(/<img\b[^>]*\bsrc="([^"]*)"/gi)].map(
+    (match) => match[1]
+  );
+  assert.deepEqual(imageSources, ["cid:acnu-logo"]);
+  assert.ok(!/url\(\s*["']?https?:/i.test(mail.html));
   assert.ok(mail.html.includes("Bob &lt;b&gt;"));
 });
 
-test("CR/LF is stripped from headers and invalid reply-to is omitted", () => {
+test("order confirmation wording, CID branding and no transaction id", () => {
+  const mail = buildOrderConfirmationEmail(order);
+  assert.equal(
+    mail.subject,
+    "ACNU Gala & Awards 2027 — Réception de votre commande"
+  );
+  assert.ok(!/TX-/.test(mail.subject));
+  assert.ok(!/Référence de transaction/i.test(mail.text));
+  assert.ok(!/TX-/.test(mail.text));
+  assert.ok(!/TX-/.test(mail.html));
+  assert.match(
+    mail.text,
+    /Référence de paiement : Mobile Money \(MoMo\) 672691175/
+  );
+  assert.ok(mail.html.includes("Réception de votre commande"));
+  assert.ok(mail.html.includes('src="cid:acnu-logo"'));
+  assert.ok(mail.html.includes('background="cid:acnu-wm-light"'));
+  assert.ok(mail.html.includes("prefers-color-scheme: dark"));
+  assert.ok(mail.html.includes("cid:acnu-wm-dark"));
+  assert.equal(mail.attachments.length, 3);
+  assert.deepEqual(
+    mail.attachments.map((asset) => asset.filename).sort(),
+    ["logo.png", "watermark-dark.png", "watermark-light.png"]
+  );
+  assert.ok(mail.attachments.every((asset) => asset.contentDisposition === "inline"));
+});
+
+test("admin alert stays image-free and keeps the transaction reference", () => {
+  const mail = buildAdminEmail(order);
+  assert.equal(mail.attachments, undefined);
+  assert.ok(!/<img/i.test(mail.html));
+  assert.match(mail.subject, /TX-ABC123/);
+  assert.ok(mail.text.includes("TX-ABC123"));
+});
+
+test("buyer emails reference only attached CID images", async () => {
+  const confirmation = buildOrderConfirmationEmail(order);
+  const approval = await buildBuyerApprovalEmail({ ...order, issuedTickets });
+  for (const mail of [confirmation, approval]) {
+    const cids = cidAttachments(mail);
+    const references = cidReferences(mail.html);
+    assert.ok(references.length > 0);
+    assert.ok(references.every((reference) => cids.has(reference)));
+    assert.ok(!/(?:src|background)="https?:/i.test(mail.html));
+    assert.ok(!/url\(\s*["']?https?:/i.test(mail.html));
+  }
+});
+
+test("CR/LF is stripped from headers and invalid reply-to is omitted", async () => {
   const hostile = {
     ...order,
     email: "buyer@example.com\r\nBcc: evil@example.com",
@@ -94,7 +181,7 @@ test("CR/LF is stripped from headers and invalid reply-to is omitted", () => {
   assert.ok(!/[\r\n]/.test(admin.from.name));
   assert.ok(!/[\r\n]/.test(admin.from.address));
 
-  const buyer = buildBuyerApprovalEmail(hostile);
+  const buyer = await buildBuyerApprovalEmail(hostile);
   assert.ok(!/[\r\n]/.test(buyer.to));
   assert.ok(!/[\r\n]/.test(buyer.subject));
 });
@@ -116,24 +203,68 @@ test("buyer email with invalid address is skipped", async () => {
   assert.equal(result.ok, false);
 });
 
-test("buyer approval includes issued ticket links", () => {
-  const mail = buildBuyerApprovalEmail({
-    ...order,
-    issuedTickets: [
-      {
-        code: "ABCDEFGHJKMNPQRS",
-        tier: "vip",
-        participantName: "Alice",
-      },
-    ],
-  });
+test("buyer approval includes ticket links, one QR per ticket and PDF passes", async () => {
+  const mail = await buildBuyerApprovalEmail({ ...order, issuedTickets });
   const link = "https://example.test/t/ABCDEFGHJKMNPQRS";
   assert.ok(mail.text.includes(link));
   assert.ok(mail.html.includes(link));
+
+  const qrReferences = [
+    ...mail.html.matchAll(/cid:qr-([A-Z0-9]+)/g),
+  ].map((match) => match[1]);
+  assert.equal(qrReferences.length, issuedTickets.length);
+  assert.deepEqual(
+    new Set(qrReferences),
+    new Set(issuedTickets.map((ticket) => ticket.code))
+  );
+
+  const qrAttachments = mail.attachments.filter((asset) =>
+    String(asset.cid).startsWith("qr-")
+  );
+  assert.equal(qrAttachments.length, issuedTickets.length);
+  assert.deepEqual(
+    new Set(qrAttachments.map((asset) => asset.cid.slice(3))),
+    new Set(qrReferences)
+  );
+
+  const pdfAttachments = mail.attachments.filter(
+    (asset) => asset.contentType === "application/pdf"
+  );
+  assert.equal(pdfAttachments.length, issuedTickets.length);
+  for (const pdf of pdfAttachments) {
+    assert.equal(Buffer.from(pdf.content).subarray(0, 5).toString("latin1"), "%PDF-");
+  }
+});
+
+test("neither buyer email contains a TX- transaction reference", async () => {
+  const confirmation = buildOrderConfirmationEmail(order);
+  const approval = await buildBuyerApprovalEmail({ ...order, issuedTickets });
+  for (const mail of [confirmation, approval]) {
+    const combined = [mail.subject, mail.text, mail.html].join("\n");
+    assert.ok(!/TX-/.test(combined));
+    assert.ok(!combined.includes(order.id));
+  }
+});
+
+test("logo and watermark CIDs are present and each has a matching attachment", async () => {
+  const mail = await buildBuyerApprovalEmail({ ...order, issuedTickets });
+  const references = cidReferences(mail.html);
+  const attachments = cidAttachments(mail);
+  for (const cid of ["cid:acnu-logo", "cid:acnu-wm-light", "cid:acnu-wm-dark"]) {
+    assert.ok(references.includes(cid), `${cid} missing from HTML`);
+    assert.ok(attachments.has(cid), `${cid} missing from attachments`);
+  }
+  for (const reference of references) {
+    assert.ok(attachments.has(reference), `${reference} has no attachment`);
+  }
 });
 
 test("MAIL_DRY_RUN sends nothing but reports success", async () => {
   const admin = await sendAdminNewTransactionEmail(order);
   assert.equal(admin.ok, true);
   assert.equal(admin.dryRun, true);
+
+  const buyer = await sendBuyerApprovalEmail({ ...order, issuedTickets });
+  assert.equal(buyer.ok, true);
+  assert.equal(buyer.dryRun, true);
 });

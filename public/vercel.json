@@ -11,10 +11,7 @@
       "includeFiles": "api/_assets/email/**"
     },
     "api/orders/[id].js": {
-      "includeFiles": [
-        "api/_assets/email/**",
-        "api/_lib/assets/**"
-      ]
+      "includeFiles": "{api/_assets/email/**,api/_lib/assets/**}"
     }
   }
 }

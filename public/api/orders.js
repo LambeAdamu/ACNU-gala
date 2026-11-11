@@ -13,6 +13,7 @@ import {
   sendOrderConfirmation,
   sendAdminNewTransactionEmail,
 } from "./_lib/mail.js";
+import { premiumParticipantError } from "./_lib/tickets.js";
 
 const { Pool } = pg;
 
@@ -208,32 +209,35 @@ function validateOrder(body) {
   if (!PAY_METHODS[payMethod]) return { error: "Moyen de paiement invalide.", status: 400 };
   if (payNum.replace(/\D/g, "").length < 8) return { error: "Numéro de paiement invalide.", status: 400 };
 
-  return {
-    order: {
-      id,
-      buyerKey: String(body.buyerKey || ""),
-      name,
-      email,
-      tel,
-      tickets,
-      qty: rawQty,
-      tier,
-      participants,
-      amount: Math.round(rawAmount),
-      payMethod,
-      payNum,
-      payDate: String(body.payDate || ""),
-      ref: String(body.ref || ""),
-      proof,
-      proofSize,
-      proofUrl,
-      proofPublicId,
-      status,
-      decidedBy: String(body.decidedBy || ""),
-      decidedAt: body.decidedAt ? String(body.decidedAt) : null,
-      createdAt: body.createdAt ? String(body.createdAt) : new Date().toISOString(),
-    },
+  const order = {
+    id,
+    buyerKey: String(body.buyerKey || ""),
+    name,
+    email,
+    tel,
+    tickets,
+    qty: rawQty,
+    tier,
+    participants,
+    amount: Math.round(rawAmount),
+    payMethod,
+    payNum,
+    payDate: String(body.payDate || ""),
+    ref: String(body.ref || ""),
+    proof,
+    proofSize,
+    proofUrl,
+    proofPublicId,
+    status,
+    decidedBy: String(body.decidedBy || ""),
+    decidedAt: body.decidedAt ? String(body.decidedAt) : null,
+    createdAt: body.createdAt ? String(body.createdAt) : new Date().toISOString(),
   };
+
+  const premiumError = premiumParticipantError(order);
+  if (premiumError) return { error: premiumError, status: 400 };
+
+  return { order };
 }
 
 export default {

@@ -45,8 +45,7 @@ export function buildTicketPlan(order) {
   for (const item of source) {
     const tier = String((item && item.tier) || "").trim();
     if (!TIERS[tier]) throw new Error("INVALID_TICKET_TIER");
-    const units = normalizeCount(item && item.qty);
-    const qty = tier === "premium" ? units * TIERS.premium.perTable : units;
+    const qty = normalizeCount(item && item.qty);
     for (let i = 0; i < qty; i += 1) {
       const index = plan.length;
       const name = (names[tier] && names[tier][i]) || (index === 0 && buyerName) || `Participant ${index + 1}`;
@@ -55,6 +54,32 @@ export function buildTicketPlan(order) {
   }
 
   return plan;
+}
+
+function premiumUnits(order) {
+  const source =
+    Array.isArray(order && order.tickets) && order.tickets.length
+      ? order.tickets
+      : [{ tier: order && order.tier, qty: order && order.qty }];
+  return source.reduce((total, item) => {
+    if (String((item && item.tier) || "").trim() !== "premium") return total;
+    return total + normalizeCount(item && item.qty);
+  }, 0);
+}
+
+export function premiumParticipantError(order) {
+  const units = premiumUnits(order);
+  const participants = Array.isArray(order && order.participants)
+    ? order.participants
+    : [];
+  const names = participants.filter(
+    (item) =>
+      String((item && item.tier) || "").trim() === "premium" &&
+      String((item && item.name) || "").trim().length > 0
+  ).length;
+
+  if (names === units) return "";
+  return `Noms des participants Premium invalides : ${units} nom(s) attendu(s), ${names} fourni(s).`;
 }
 
 export async function getTicketsForOrder(db, transactionId) {

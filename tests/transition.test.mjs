@@ -10,12 +10,26 @@ const { runDecision } = await import(moduleUrl);
 
 function createStubDb(initialRows) {
   const rows = new Map(initialRows.map((row) => [row.id, { ...row }]));
+  let snapshot = null;
   const client = {
     async query(sql, params = []) {
       const text = String(sql).trim();
-      if (/^BEGIN/i.test(text)) return { rows: [] };
-      if (/^COMMIT/i.test(text)) return { rows: [] };
-      if (/^ROLLBACK/i.test(text)) return { rows: [] };
+      if (/^BEGIN/i.test(text)) {
+        snapshot = new Map([...rows].map(([id, row]) => [id, { ...row }]));
+        return { rows: [] };
+      }
+      if (/^COMMIT/i.test(text)) {
+        snapshot = null;
+        return { rows: [] };
+      }
+      if (/^ROLLBACK/i.test(text)) {
+        if (snapshot) {
+          rows.clear();
+          for (const [id, row] of snapshot) rows.set(id, row);
+          snapshot = null;
+        }
+        return { rows: [] };
+      }
       if (/FOR UPDATE/i.test(text)) {
         const row = rows.get(params[0]);
         return { rows: row ? [{ ...row }] : [] };
@@ -122,6 +136,40 @@ test("pending -> approved -> pending -> approved reissues tickets and sends two 
   assert.equal(sent.length, 2);
   assert.deepEqual(issued, ["TX-ABC123", "TX-ABC123"]);
   assert.deepEqual(revoked, ["TX-ABC123"]);
+});
+
+test("capacity failure rolls back the approval and sends no email", async () => {
+  const db = createStubDb([
+    baseRow({
+      tier: "premium",
+      tickets: [{ tier: "premium", qty: 1 }],
+      participants: [{ tier: "premium", name: "Guest 1" }],
+    }),
+  ]);
+  const sent = [];
+  const result = await runDecision({
+    db,
+    ...decisionArgs("TX-ABC123", "approved"),
+    sendApprovalEmail: async (order) => {
+      sent.push(order);
+    },
+    issueTickets: async () => ({
+      ok: false,
+      error: "CAPACITY",
+      tier: "premium",
+      remaining: 0,
+    }),
+    revokeTickets: async () => {
+      throw new Error("revokeTickets must not be called");
+    },
+  });
+
+  assert.equal(result.capacity, true);
+  assert.equal(result.error, "CAPACITY");
+  assert.equal(result.tier, "premium");
+  assert.equal(result.remaining, 0);
+  assert.equal(sent.length, 0);
+  assert.equal(db.rows.get("TX-ABC123").status, "pending");
 });
 
 test("rejected status sends no thank-you email", async () => {

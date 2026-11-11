@@ -2,8 +2,67 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   buildTicketPlan,
+  issueTicketsForOrder,
+  premiumParticipantError,
   toPublicTicket,
 } from "../public/api/_lib/tickets.js";
+
+function createTicketDb(initial = []) {
+  const tickets = initial.map((ticket) => ({ ...ticket }));
+  let sequence = 0;
+  return {
+    tickets,
+    async query(sql, params = []) {
+      const text = String(sql).trim();
+      if (/^SELECT .*FROM tickets WHERE transaction_id/i.test(text)) {
+        return {
+          rows: tickets
+            .filter((ticket) => ticket.transaction_id === params[0])
+            .sort((a, b) => a.participant_index - b.participant_index),
+        };
+      }
+      if (/count\(\*\)/i.test(text)) {
+        const n = tickets.filter(
+          (ticket) =>
+            ticket.tier === params[0] &&
+            (ticket.status === "valid" || ticket.status === "used")
+        ).length;
+        return { rows: [{ n }] };
+      }
+      if (/^INSERT INTO tickets/i.test(text)) {
+        sequence += 1;
+        const row = {
+          code: params[0],
+          transaction_id: params[1],
+          tier: params[2],
+          participant_name: params[3],
+          participant_index: params[4],
+          status: "valid",
+          issued_at: `2027-01-01T00:00:0${sequence % 10}.000Z`,
+          used_at: null,
+          used_by: null,
+        };
+        tickets.push(row);
+        return { rows: [row] };
+      }
+      throw new Error("unexpected query: " + text);
+    },
+  };
+}
+
+function premiumOrder(id, qty) {
+  return {
+    id,
+    name: "Buyer",
+    tier: "premium",
+    qty,
+    tickets: [{ tier: "premium", qty }],
+    participants: Array.from({ length: qty }, (_, index) => ({
+      tier: "premium",
+      name: `Guest ${index + 1}`,
+    })),
+  };
+}
 
 test("ticket plan follows ticket lines and participant names", () => {
   const plan = buildTicketPlan({
@@ -28,7 +87,7 @@ test("ticket plan follows ticket lines and participant names", () => {
   ]);
 });
 
-test("one premium unit expands to eight tickets", () => {
+test("one premium unit issues exactly one ticket", () => {
   const plan = buildTicketPlan({
     name: "Buyer",
     tier: "premium",
@@ -37,13 +96,12 @@ test("one premium unit expands to eight tickets", () => {
     participants: [{ tier: "premium", name: "Guest 1" }],
   });
 
-  assert.equal(plan.length, 8);
-  assert.deepEqual(plan[0], { tier: "premium", name: "Guest 1", participantIndex: 1 });
-  assert.deepEqual(plan[1], { tier: "premium", name: "Participant 2", participantIndex: 2 });
-  assert.deepEqual(plan[7], { tier: "premium", name: "Participant 8", participantIndex: 8 });
+  assert.deepEqual(plan, [
+    { tier: "premium", name: "Guest 1", participantIndex: 1 },
+  ]);
 });
 
-test("premium fallback quantity is treated as table units", () => {
+test("premium fallback quantity issues one ticket per unit", () => {
   const plan = buildTicketPlan({
     name: "Buyer",
     tier: "premium",
@@ -51,13 +109,13 @@ test("premium fallback quantity is treated as table units", () => {
     participants: [],
   });
 
-  assert.equal(plan.length, 8);
-  assert.deepEqual(plan[0], { tier: "premium", name: "Buyer", participantIndex: 1 });
-  assert.deepEqual(plan[7], { tier: "premium", name: "Participant 8", participantIndex: 8 });
+  assert.deepEqual(plan, [
+    { tier: "premium", name: "Buyer", participantIndex: 1 },
+  ]);
 });
 
-test("two premium units expand to sixteen tickets", () => {
-  const participants = Array.from({ length: 16 }, (_, i) => ({
+test("two premium units issue two tickets", () => {
+  const participants = Array.from({ length: 2 }, (_, i) => ({
     tier: "premium",
     name: `Guest ${i + 1}`,
   }));
@@ -69,12 +127,13 @@ test("two premium units expand to sixteen tickets", () => {
     participants,
   });
 
-  assert.equal(plan.length, 16);
-  assert.deepEqual(plan[0], { tier: "premium", name: "Guest 1", participantIndex: 1 });
-  assert.deepEqual(plan[15], { tier: "premium", name: "Guest 16", participantIndex: 16 });
+  assert.deepEqual(plan, [
+    { tier: "premium", name: "Guest 1", participantIndex: 1 },
+    { tier: "premium", name: "Guest 2", participantIndex: 2 },
+  ]);
 });
 
-test("premium expands alongside classic and vip lines", () => {
+test("premium issues one ticket alongside classic and vip lines", () => {
   const plan = buildTicketPlan({
     name: "Buyer",
     tier: "classic",
@@ -87,10 +146,104 @@ test("premium expands alongside classic and vip lines", () => {
     participants: [],
   });
 
-  assert.equal(plan.length, 13);
-  assert.equal(plan.filter((item) => item.tier === "premium").length, 8);
+  assert.equal(plan.length, 6);
+  assert.equal(plan.filter((item) => item.tier === "premium").length, 1);
   assert.deepEqual(plan[5], { tier: "premium", name: "Participant 6", participantIndex: 6 });
-  assert.deepEqual(plan[12], { tier: "premium", name: "Participant 13", participantIndex: 13 });
+});
+
+test("one premium order issues one ticket", async () => {
+  const db = createTicketDb();
+  const result = await issueTicketsForOrder(db, premiumOrder("TX-AAAAAA", 1));
+
+  assert.equal(result.ok, true);
+  assert.equal(result.issued, 1);
+  assert.equal(db.tickets.length, 1);
+  assert.equal(db.tickets[0].tier, "premium");
+  assert.equal(db.tickets[0].participant_name, "Guest 1");
+});
+
+test("five premium tickets are accepted and a sixth is rejected", async () => {
+  const db = createTicketDb();
+  const five = await issueTicketsForOrder(db, premiumOrder("TX-AAAAAA", 5));
+
+  assert.equal(five.ok, true);
+  assert.equal(five.issued, 5);
+  assert.equal(db.tickets.length, 5);
+
+  const sixth = await issueTicketsForOrder(db, premiumOrder("TX-BBBBBB", 1));
+
+  assert.equal(sixth.ok, false);
+  assert.equal(sixth.error, "CAPACITY");
+  assert.equal(sixth.tier, "premium");
+  assert.equal(sixth.remaining, 0);
+  assert.equal(db.tickets.length, 5);
+});
+
+test("classic and vip still issue one ticket per unit", async () => {
+  const db = createTicketDb();
+  const result = await issueTicketsForOrder(db, {
+    id: "TX-CCCCCC",
+    name: "Buyer",
+    tier: "classic",
+    qty: 5,
+    tickets: [
+      { tier: "classic", qty: 2 },
+      { tier: "vip", qty: 3 },
+    ],
+    participants: [
+      { tier: "classic", name: "Classic 1" },
+      { tier: "classic", name: "Classic 2" },
+      { tier: "vip", name: "VIP 1" },
+      { tier: "vip", name: "VIP 2" },
+      { tier: "vip", name: "VIP 3" },
+    ],
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.issued, 5);
+  assert.equal(db.tickets.filter((ticket) => ticket.tier === "classic").length, 2);
+  assert.equal(db.tickets.filter((ticket) => ticket.tier === "vip").length, 3);
+});
+
+test("premium participant validation requires one name per pass", () => {
+  const base = {
+    tier: "premium",
+    qty: 1,
+    tickets: [{ tier: "premium", qty: 1 }],
+    participants: [{ tier: "premium", name: "Guest 1" }],
+  };
+
+  assert.equal(premiumParticipantError(base), "");
+  assert.match(
+    premiumParticipantError({ ...base, participants: [] }),
+    /1 nom\(s\) attendu\(s\), 0 fourni\(s\)/
+  );
+  assert.match(
+    premiumParticipantError({
+      ...base,
+      participants: [
+        { tier: "premium", name: "Guest 1" },
+        { tier: "premium", name: "Guest 2" },
+      ],
+    }),
+    /1 nom\(s\) attendu\(s\), 2 fourni\(s\)/
+  );
+  assert.match(
+    premiumParticipantError({
+      ...base,
+      participants: [{ tier: "premium", name: "   " }],
+    }),
+    /1 nom\(s\) attendu\(s\), 0 fourni\(s\)/
+  );
+  assert.equal(
+    premiumParticipantError({
+      tier: "classic",
+      qty: 1,
+      tickets: [{ tier: "classic", qty: 1 }],
+      participants: [],
+    }),
+    ""
+  );
 });
 
 test("ticket plan falls back to the buyer and generated participant labels", () => {

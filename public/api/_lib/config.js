@@ -28,7 +28,7 @@ export const VIP_TABLES = parsePositiveInt(process.env.VIP_TABLES);
 export const TIERS = Object.freeze({
   classic: Object.freeze({ perTable: 10, tables: 16 }),
   vip: Object.freeze({ perTable: 10, tables: VIP_TABLES }),
-  premium: Object.freeze({ perTable: 8, tables: 5 }),
+  premium: Object.freeze({ perTable: 1, tables: 5 }),
 });
 
 export const SITE_URL = normalizeSiteUrl(process.env.SITE_URL);

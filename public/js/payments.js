@@ -17,7 +17,7 @@
   };
   let selectedPay = "momomo";
   const TIER_ORDER = ["premium", "vip", "classic"];
-  const TICKETS_PER_UNIT = { premium: 8, vip: 1, classic: 1 };
+  const TICKETS_PER_UNIT = { premium: 1, vip: 1, classic: 1 };
   const participantCache = {}; // key like "premium:0" -> entered name
 
   const form = document.getElementById("payForm");
@@ -65,10 +65,7 @@
     TIER_ORDER.forEach((tier) => {
       for (let i = 0; i < ticketCount(tier); i++) {
         const key = tier + ":" + i;
-        const label =
-          tier === "premium"
-            ? `Nom — Premium table ${Math.floor(i / TICKETS_PER_UNIT.premium) + 1} · place ${(i % TICKETS_PER_UNIT.premium) + 1}`
-            : `Nom — ${TIERS[tier].label} ${i + 1}`;
+        const label = `Nom — ${TIERS[tier].label} ${i + 1}`;
         html.push(
           `<div class="participant-field">
             <span class="participant-field__label">${label}</span>

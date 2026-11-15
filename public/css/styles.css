@@ -2868,14 +2868,26 @@ body.is-video-modal-open {
   z-index: 1;
 }
 
-@media (max-width: 520px) {
+/* Phones & tablets: keep the discover pop-up a wide, horizontal window */
+@media (max-width: 1024px) {
   .video-modal {
     padding: 12px;
   }
 
   .video-modal__panel {
+    width: 100%;
+    max-width: 100%;
     max-height: calc(100vh - 24px);
-    padding: 16px;
+    padding: 14px;
+  }
+
+  .video-modal__stage {
+    aspect-ratio: 16 / 9;
+    max-height: none;
+  }
+
+  .video-modal__video {
+    max-height: none;
   }
 
   .video-modal__close {
@@ -2884,7 +2896,23 @@ body.is-video-modal-open {
   }
 
   .video-modal__title {
-    margin-right: 48px;
-    margin-bottom: 12px;
+    margin-right: 52px;
+    margin-bottom: 10px;
+  }
+}
+
+/* Landscape phones: shrink the window so it stays 16:9 instead of going ultra-wide */
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 560px) {
+  .video-modal__panel {
+    width: min(100%, calc((100vh - 24px) * 16 / 9));
+    padding: 8px;
+  }
+
+  .video-modal__title {
+    display: none;
+  }
+
+  .video-modal__stage {
+    max-height: none;
   }
 }

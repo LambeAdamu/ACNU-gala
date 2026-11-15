@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { buildTicketPdf } from "../public/api/_lib/pass.js";
+import { buildTicketPdf, passFileName } from "../public/api/_lib/pass.js";
 
 const requirePublic = createRequire(
   new URL("../public/package.json", import.meta.url)
@@ -20,7 +20,13 @@ const baseTicket = {
 
 const url = "https://acnu-gala.vercel.app/t/ABCDEFGHJKMNPQRS";
 
-test("buildTicketPdf renders a one-page A5 pass for each tier", async () => {
+const PAGE_SIZES = {
+  premium: [925, 1280],
+  vip: [925, 1280],
+  classic: [898, 1280],
+};
+
+test("buildTicketPdf renders a one-page pass at the template size for each tier", async () => {
   for (const tier of ["premium", "vip", "classic"]) {
     const bytes = await buildTicketPdf(
       { ...baseTicket, tier },
@@ -31,9 +37,24 @@ test("buildTicketPdf renders a one-page A5 pass for each tier", async () => {
     const pdf = await PDFDocument.load(bytes);
     assert.equal(pdf.getPageCount(), 1);
     const page = pdf.getPage(0);
-    assert.equal(page.getWidth(), 420);
-    assert.equal(page.getHeight(), 595);
+    assert.equal(page.getWidth(), PAGE_SIZES[tier][0]);
+    assert.equal(page.getHeight(), PAGE_SIZES[tier][1]);
   }
+});
+
+test("passFileName strips accents and replaces spaces with hyphens", () => {
+  assert.equal(
+    passFileName({ tier: "vip", participant_name: "Élodie Ngo Bell" }),
+    "Billet-VIP-Elodie-Ngo-Bell.pdf"
+  );
+  assert.equal(
+    passFileName({ tier: "premium", participant_index: 3 }),
+    "Billet-Premium-3.pdf"
+  );
+  assert.equal(
+    passFileName({ tier: "classic", participant_name: "Test Élève" }),
+    "Billet-Classic-Test-Eleve.pdf"
+  );
 });
 
 test("buildTicketPdf handles long and unsupported participant names", async () => {
@@ -48,7 +69,7 @@ test("buildTicketPdf handles long and unsupported participant names", async () =
   assert.equal(pdf.getPageCount(), 1);
 });
 
-test("buildTicketPdf renders used and revoked states", async () => {
+test("buildTicketPdf builds a pass regardless of used or revoked status", async () => {
   for (const status of ["used", "revoked"]) {
     const bytes = await buildTicketPdf(
       {

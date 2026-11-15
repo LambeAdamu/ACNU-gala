@@ -1,8 +1,10 @@
 {
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/checkin", "destination": "/checkin.html" },
-    { "source": "/t/:code", "destination": "/tickets.html" }
+    { "source": "/checkin", "destination": "/checkin.html" }
+  ],
+  "redirects": [
+    { "source": "/t/:code", "destination": "/checkin", "permanent": false }
   ],
   "functions": {
     "api/tickets/[code].js": {

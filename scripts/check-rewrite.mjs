@@ -8,6 +8,7 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const publicRoot = path.resolve(scriptDir, "..", "public");
 const config = JSON.parse(fs.readFileSync(path.join(publicRoot, "vercel.json"), "utf8"));
 const rewrites = Array.isArray(config.rewrites) ? config.rewrites : [];
+const redirects = Array.isArray(config.redirects) ? config.redirects : [];
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -57,10 +58,42 @@ function matchRewrite(pathname) {
   return null;
 }
 
+function matchRedirect(pathname) {
+  for (const redirect of redirects) {
+    const source = String(redirect.source || "");
+    const { regex, names } = compileSource(source);
+    const match = pathname.match(regex);
+    if (!match) continue;
+
+    const params = Object.fromEntries(names.map((name, index) => [name, match[index + 1]]));
+    const destination = String(redirect.destination || "").replace(
+      /:([A-Za-z0-9_]+)/g,
+      (token, name) => params[name] ?? token
+    );
+    return {
+      source,
+      destination,
+      status: redirect.permanent ? 308 : 307,
+    };
+  }
+  return null;
+}
+
 const server = http.createServer((request, response) => {
   try {
     const url = new URL(request.url || "/", "http://127.0.0.1");
     let pathname = decodeURIComponent(url.pathname);
+
+    const redirect = matchRedirect(pathname);
+    if (redirect) {
+      response.writeHead(redirect.status, {
+        location: redirect.destination,
+        "cache-control": "no-store",
+      });
+      response.end();
+      return;
+    }
+
     const rewrite = matchRewrite(pathname);
     if (rewrite) pathname = rewrite.destination;
     if (pathname === "/") pathname = "/index.html";
@@ -102,12 +135,17 @@ try {
   const address = server.address();
   const base = `http://127.0.0.1:${address.port}`;
 
-  const ticketResponse = await fetch(`${base}/t/ABC123`);
-  const ticketBody = await ticketResponse.text();
-  assert.equal(ticketResponse.status, 200, "/t/ABC123 did not return 200");
-  assert.ok(ticketBody.includes('id="ticketStatus"'), "tickets.html page was not served");
-  assert.ok(ticketBody.includes('id="ticketContent"'), "tickets.html ticket content is missing");
-  assert.ok(ticketBody.includes('fetch("/api/tickets/"'), "tickets.html API lookup is missing");
+  const ticketResponse = await fetch(`${base}/t/ABC123`, { redirect: "manual" });
+  const ticketLocation = ticketResponse.headers.get("location") || "";
+  assert.ok(
+    ticketResponse.status === 307 || ticketResponse.status === 308,
+    "/t/ABC123 did not return a redirect"
+  );
+  assert.equal(
+    new URL(ticketLocation, base).pathname,
+    "/checkin",
+    "/t/ABC123 did not redirect to /checkin"
+  );
 
   const adminResponse = await fetch(`${base}/admin`);
   const adminBody = await adminResponse.text();
@@ -121,7 +159,7 @@ try {
   assert.ok(checkinBody.includes('id="checkinApp"'), "checkin.html app is missing");
   assert.ok(checkinBody.includes('id="scanVideo"'), "checkin.html scanner is missing");
 
-  console.log("ok /t/ABC123 -> tickets.html");
+  console.log(`ok /t/ABC123 -> ${ticketResponse.status} /checkin`);
   console.log("ok /admin -> admin.html");
   console.log("ok /checkin -> checkin.html");
 } catch (error) {

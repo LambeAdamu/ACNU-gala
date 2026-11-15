@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Gala &amp; Awards 2027 — Contrôle d'accès ACNU. Accès réservé au personnel du gala.">
+  <title>Contrôle d'accès — Gala &amp; Awards 2027 · ACNU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Same header + gate treatment as admin.html */
+    .admin-header {
+      --admin-header-h: 64px;
+      height: var(--admin-header-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 24px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      z-index: 100;
+    }
+    .admin-header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-hi), var(--gold), var(--gold-deep), transparent);
+    }
+    .admin-header__title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .admin-header__title .accent { color: var(--gold-2); }
+    .admin-header__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-header__link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-2);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      transition: color 0.18s var(--ease), background 0.18s var(--ease);
+    }
+    .admin-header__link:hover { color: var(--ink); background: var(--bg-2); }
+    .admin-header__link--logout {
+      color: var(--gold-2);
+      border: 1px solid var(--gold-deep);
+      box-shadow: inset 0 0 0 1px var(--gold-deep);
+    }
+    .admin-header__link--logout:hover {
+      box-shadow: inset 0 0 0 1px var(--gold-deep);
+      background: var(--gold-soft);
+    }
+    .gate { min-height: calc(100vh - var(--admin-header-h, 64px)); }
+
+    #loadError {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      margin-bottom: 24px;
+      padding: 14px 18px;
+      border: 1px solid var(--danger-line);
+      border-radius: var(--radius-md);
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    #loadError .load-error__msg {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    #loadError .load-error__msg svg {
+      width: 18px;
+      height: 18px;
+      flex: none;
+    }
+
+    .checkin-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .checkin-head__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .stat--tiers .stat__num { display: none; }
+    .tier-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .tier-breakdown div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .tier-breakdown b {
+      font-family: var(--font-display);
+      font-size: 26px;
+      line-height: 1;
+      color: var(--gold-2);
+      font-variant-numeric: tabular-nums;
+    }
+    .tier-breakdown span {
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    .filters {
+      display: flex;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 14px 20px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-1);
+    }
+    .filters .field {
+      margin: 0;
+      min-width: 180px;
+    }
+    .filters label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .filters select {
+      min-height: 40px;
+    }
+    .filters__count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--ink-3);
+      padding-bottom: 10px;
+    }
+
+    .pill--valid { color: var(--success); background: var(--success-soft); border-color: var(--success-line); }
+    .pill--used { color: var(--gold-2); background: var(--gold-soft); border-color: var(--line-gold); }
+    .pill--revoked { color: var(--danger); background: var(--danger-soft); border-color: var(--danger-line); }
+
+    .ticket-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Camera scanner */
+    .scan-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #111;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .scan-frame video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .scan-frame::after {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      border-radius: 18px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.22);
+      pointer-events: none;
+    }
+    .scan-status {
+      margin: 16px 0 0;
+      font-size: 14px;
+      color: var(--ink-2);
+      text-align: center;
+    }
+    .scan-status[data-tone="err"] { color: var(--danger); font-weight: 600; }
+    .scan-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    #scanCanvas { display: none; }
+
+    .revoked-banner {
+      margin: 0 0 18px;
+      padding: 18px;
+      border: 2px solid var(--danger);
+      border-radius: var(--radius-md);
+      background: var(--danger-soft);
+      color: var(--danger);
+      text-align: center;
+      font-weight: 700;
+      font-size: 17px;
+      line-height: 1.35;
+    }
+    .ticket-msg {
+      margin: 18px 0 0;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+    }
+    .ticket-msg[data-tone="ok"] { color: var(--success); background: var(--success-soft); border-color: var(--success-line); }
+    .ticket-msg[data-tone="err"] { color: var(--danger); background: var(--danger-soft); border-color: var(--danger-line); }
+    .ticket-msg[data-tone="warn"] { color: var(--gold-2); background: var(--gold-soft); border-color: var(--line-gold); }
+
+    #ticketMarkBtn {
+      --btn-bg: var(--success);
+      --btn-ink: var(--glass);
+      border: 1px solid var(--success);
+    }
+
+    @media (max-width: 720px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .filters__count { margin-left: 0; }
+    }
+    @media (max-width: 520px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au contenu principal</a>
+
+  <header class="admin-header">
+    <h1 class="admin-header__title">ACNU <span class="accent">· Contrôle d'accès</span></h1>
+    <div class="admin-header__actions">
+      <a class="admin-header__link" href="index.html">Retour au site</a>
+      <button type="button" class="admin-header__link admin-header__link--logout" id="logoutBtn" hidden>Se déconnecter</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ============ Gate (same markup/classes as admin.html) ============ -->
+    <section id="gate" class="gate" aria-label="Connexion contrôle d'accès">
+      <div class="panel gate__card">
+        <div class="tx-card" style="text-align:center">
+          <div class="tx-card__icon" style="color:var(--gold-2); border-color:var(--gold-deep); background:var(--gold-soft)" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2M21 7V5a2 2 0 00-2-2h-2M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 12h10"/></svg>
+          </div>
+          <h3>Contrôle d'accès</h3>
+          <p>Accès réservé au personnel du gala. Connectez-vous pour scanner les billets à l'entrée.</p>
+
+          <div class="form" style="text-align:left">
+            <div class="field">
+              <label for="gateEmail">Email <span class="req" aria-hidden="true">*</span></label>
+              <input id="gateEmail" type="email" name="email" autocomplete="email" inputmode="email" required>
+            </div>
+            <div class="field input--reveal">
+              <label for="gatePass">Mot de passe <span class="req" aria-hidden="true">*</span></label>
+              <input id="gatePass" type="password" name="password" autocomplete="current-password" required>
+              <button type="button" class="field__toggle" id="gatePassToggle" aria-label="Afficher le mot de passe" aria-pressed="false">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+              </button>
+              <span id="gateHint" class="error" role="alert" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:15px;height:15px"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span></span>
+              </span>
+            </div>
+            <button class="btn" type="button" id="gateSubmit" style="width:100%">Se connecter</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Presence dashboard ============ -->
+    <section id="checkinApp" class="section" hidden aria-label="Contrôle d'accès">
+      <div class="container">
+        <div class="sec-head checkin-head" data-reveal>
+          <div>
+            <h1 class="sec-head__title">Présences</h1>
+            <span id="whoAmI" style="display:block;margin-top:10px;font-size:13px;color:var(--ink-3)"></span>
+          </div>
+          <div class="checkin-head__actions">
+            <button type="button" class="btn btn--sm" id="refreshBtn">Actualiser</button>
+            <button type="button" class="btn" id="scanOpen">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2M21 7V5a2 2 0 00-2-2h-2M21 17v2a2 2 0 01-2 2h-2"/><path d="M7 12h10"/></svg>
+              Scanner
+            </button>
+          </div>
+        </div>
+
+        <div id="loadError" role="alert" hidden></div>
+
+        <div class="stats" data-reveal style="margin-bottom:32px">
+          <div class="card stat">
+            <div class="stat__num" id="statTotal">0</div>
+            <div class="stat__lbl">Total billets</div>
+          </div>
+          <div class="card stat">
+            <div class="stat__num" style="color:var(--success)" id="statPresent">0</div>
+            <div class="stat__lbl">Présents</div>
+          </div>
+          <div class="card stat">
+            <div class="stat__num" style="color:var(--gold-2)" id="statAbsent">0</div>
+            <div class="stat__lbl">Pas encore arrivés</div>
+          </div>
+          <div class="card stat stat--tiers">
+            <div class="tier-breakdown">
+              <div><b id="tierClassic">0</b><span>Classic</span></div>
+              <div><b id="tierVip">0</b><span>VIP</span></div>
+              <div><b id="tierPremium">0</b><span>Premium</span></div>
+            </div>
+            <div class="stat__lbl">Par catégorie</div>
+          </div>
+        </div>
+
+        <div class="panel" data-reveal style="max-width:none; padding:0; overflow:auto; max-height:640px; scrollbar-width:thin">
+          <div class="filters">
+            <div class="field">
+              <label for="filterPresence">Présence</label>
+              <select id="filterPresence">
+                <option value="">Tous</option>
+                <option value="used">Présents</option>
+                <option value="valid">Pas encore arrivés</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterTier">Catégorie</label>
+              <select id="filterTier">
+                <option value="">Toutes</option>
+                <option value="classic">Classic</option>
+                <option value="vip">VIP</option>
+                <option value="premium">Premium</option>
+              </select>
+            </div>
+            <span class="filters__count" id="filterCount" role="status" aria-live="polite"></span>
+          </div>
+          <table class="tx-table">
+            <caption class="sr-only">Liste des billets et présences du gala ACNU</caption>
+            <thead>
+              <tr>
+                <th scope="col">Billet</th>
+                <th scope="col">Titulaire</th>
+                <th scope="col">Catégorie</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Arrivée</th>
+              </tr>
+            </thead>
+            <tbody id="ticketRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Camera scanner ============ -->
+  <div id="scanModal" class="modal" hidden>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="scanTitle" style="max-width:560px">
+      <button type="button" class="lightbox__close" id="scanClose" aria-label="Fermer le scanner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h3 id="scanTitle" class="modal__title">Scanner un billet</h3>
+      <p class="modal__id">Présentez le QR code du billet devant la caméra.</p>
+      <div class="scan-frame">
+        <video id="scanVideo" playsinline muted autoplay></video>
+      </div>
+      <canvas id="scanCanvas"></canvas>
+      <p class="scan-status" id="scanStatus" role="status" aria-live="polite">Ouverture de la caméra…</p>
+      <div class="scan-actions">
+        <button type="button" class="btn" id="scanCancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Ticket check-in popup ============ -->
+  <div id="ticketModal" class="modal" hidden>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle" style="max-width:520px">
+      <button type="button" class="lightbox__close" id="ticketModalClose" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+
+      <h3 id="ticketModalTitle" class="modal__title">Billet</h3>
+      <p class="modal__id" id="ticketModalCode"></p>
+
+      <div id="ticketRevokedBanner" class="revoked-banner" hidden>Billet annulé — refus d'entrée</div>
+
+      <div class="modal__grid">
+        <div class="modal__cell">
+          <span class="modal__lbl">Titulaire</span>
+          <b id="ticketHolder">—</b>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Catégorie</span>
+          <b id="ticketTier">—</b>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Statut</span>
+          <span id="ticketStatus"></span>
+        </div>
+        <div class="modal__cell">
+          <span class="modal__lbl">Arrivée</span>
+          <b id="ticketUsedAt">—</b>
+          <small id="ticketUsedBy"></small>
+        </div>
+      </div>
+
+      <p class="ticket-msg" id="ticketMsg" hidden></p>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ok" id="ticketMarkBtn" hidden>Marquer présent</button>
+        <button type="button" class="btn" id="ticketDoneBtn">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>
+  <script src="js/firebase-config.js" defer></script>
+  <script src="js/firebase.js" defer></script>
+  <script src="js/vendor/jsQR.js" defer></script>
+  <script src="js/checkin.js" defer></script>
+</body>
+</html>

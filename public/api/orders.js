@@ -14,18 +14,12 @@ import {
   sendAdminNewTransactionEmail,
 } from "./_lib/mail.js";
 import { premiumParticipantError } from "./_lib/tickets.js";
+import { verifyAdmin } from "./_lib/admin.js";
 
 const { Pool } = pg;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-/* Admin allowlist. Configurable via the ADMIN_EMAILS env var (comma-separated);
- * falls back to the historical default so nothing breaks if it is unset. */
-const ADMIN_EMAIL = "acnubureau.littoral@gmail.com";
-const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || ADMIN_EMAIL)
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
 const TIERS = { premium: true, vip: true, classic: true };
 const STATUSES = { pending: true, approved: true, rejected: true };
 const PAY_METHODS = { momomo: true, orange: true };
@@ -138,38 +132,6 @@ function toPublic(row) {
     decidedAt: row.decided_at,
     createdAt: row.created_at,
   };
-}
-
-/* Verify an admin ID token via the Firebase Auth REST API (no admin SDK needed).
- * Returns { email } on success, or { error } with a matching HTTP status. */
-async function verifyAdmin(request) {
-  const auth = request.headers.get("authorization") || "";
-  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  const apiKey = process.env.FIREBASE_WEB_API_KEY;
-  if (!apiKey) {
-    console.error("orders: FIREBASE_WEB_API_KEY is not set on the server.");
-    return { error: "Server configuration error.", status: 500 };
-  }
-  if (!token) return { error: "Authentification requise.", status: 401 };
-
-  try {
-    const res = await fetch(
-      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + apiKey,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken: token }),
-      }
-    );
-    if (!res.ok) return { error: "Authentification invalide.", status: 401 };
-    const data = await res.json();
-    const email = ((data.users && data.users[0] && data.users[0].email) || "").trim();
-    if (!ADMIN_EMAILS.includes(email.toLowerCase())) return { error: "Accès refusé.", status: 403 };
-    return { email };
-  } catch (e) {
-    console.error("orders token lookup error:", e);
-    return { error: "Vérification de session impossible.", status: 500 };
-  }
 }
 
 /* Validate an order payload. Returns { order } or { error } with HTTP status. */

@@ -114,8 +114,16 @@ try {
   assert.equal(adminResponse.status, 200, "/admin did not return 200");
   assert.ok(adminBody.includes('id="adminApp"'), "admin.html was not served");
 
+  const checkinResponse = await fetch(`${base}/checkin`);
+  const checkinBody = await checkinResponse.text();
+  assert.equal(checkinResponse.status, 200, "/checkin did not return 200");
+  assert.ok(checkinBody.includes('id="gate"'), "checkin.html gate is missing");
+  assert.ok(checkinBody.includes('id="checkinApp"'), "checkin.html app is missing");
+  assert.ok(checkinBody.includes('id="scanVideo"'), "checkin.html scanner is missing");
+
   console.log("ok /t/ABC123 -> tickets.html");
   console.log("ok /admin -> admin.html");
+  console.log("ok /checkin -> checkin.html");
 } catch (error) {
   exitCode = 1;
   console.log(`failed: ${error && error.message ? error.message : "unknown"}`);

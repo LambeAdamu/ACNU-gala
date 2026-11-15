@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/checkin", "destination": "/checkin.html" },
     { "source": "/t/:code", "destination": "/tickets.html" }
   ],
   "functions": {

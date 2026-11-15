@@ -137,8 +137,8 @@ export async function issueTicketsForOrder(db, order) {
 
   const existing = await getTicketsForOrder(db, transactionId);
   if (existing.length) {
-    const active = existing.filter((ticket) => ticket.status !== "revoked");
-    if (active.length) {
+    const revoked = existing.filter((ticket) => ticket.status === "revoked");
+    if (!revoked.length) {
       return { ok: true, issued: 0, existing: existing.length, tickets: existing };
     }
 
@@ -146,8 +146,12 @@ export async function issueTicketsForOrder(db, order) {
     const capacity = await checkCapacity(db, plan);
     if (!capacity.ok) return capacity;
 
+    /* A revoked ticket that had already been scanned must come back as
+     * 'used' (with the original used_at/used_by intact); only a ticket that
+     * was revoked while still 'valid' may become 'valid' again. */
     const { rows } = await db.query(
-      `UPDATE tickets SET status = 'valid'
+      `UPDATE tickets
+          SET status = CASE WHEN used_at IS NOT NULL THEN 'used' ELSE 'valid' END
         WHERE transaction_id = $1 AND status = 'revoked'
         RETURNING ${TICKET_COLUMNS}`,
       [transactionId]
@@ -191,9 +195,12 @@ export async function issueTicketsForOrder(db, order) {
 }
 
 export async function revokeTicketsForOrder(db, transactionId) {
+  /* Revoke every ticket that is not already revoked — including tickets that
+   * were already scanned — so an un-approved order can never leave a ticket
+   * that still scans as valid. used_at/used_by are intentionally preserved. */
   const { rows } = await db.query(
     `UPDATE tickets SET status = 'revoked'
-      WHERE transaction_id = $1 AND status = 'valid'
+      WHERE transaction_id = $1 AND status IN ('valid', 'used')
       RETURNING ${TICKET_COLUMNS}`,
     [transactionId]
   );
@@ -236,4 +243,33 @@ export function toPublicTicket(row, { admin = false } = {}) {
     ticket.usedBy = row.used_by;
   }
   return ticket;
+}
+
+function holderName(row) {
+  const index = Number(row.participant_index) || 0;
+  const name = String(row.participant_name ?? "").trim();
+  if (!name) return `Invité ${index}`;
+  return name;
+}
+
+/* Staff-facing ticket shape: no buyer e-mail, phone or payment data. Premium
+ * passes are identified by their table number (participant_index), matching
+ * the PDF pass generator. */
+export function toStaffTicket(row) {
+  const index = Number(row.participant_index) || 0;
+  const premium = row.tier === "premium";
+  return {
+    code: row.code,
+    tier: row.tier,
+    tierLabel: TIER_LABELS[row.tier] || row.tier,
+    holderName: premium ? `Table ${index}` : holderName(row),
+    participantName: premium ? null : String(row.participant_name ?? "").trim(),
+    tableNumber: premium ? index : null,
+    participantIndex: index,
+    status: row.status,
+    statusLabel: TICKET_STATUS_LABELS[row.status] || row.status,
+    issuedAt: row.issued_at,
+    usedAt: row.used_at || null,
+    usedBy: row.used_by || null,
+  };
 }

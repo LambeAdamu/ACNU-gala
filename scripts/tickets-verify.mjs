@@ -92,13 +92,39 @@ if (!connectionString) {
     }
 
     const revoked = await revokeTicketsForOrder(client, reference);
-    if (revoked.revoked !== 1) {
-      throw new Error("expected one valid ticket to be revoked");
+    if (revoked.revoked !== 2) {
+      throw new Error("expected both tickets (used and valid) to be revoked");
+    }
+
+    const blocked = await checkInTicket(client, first.tickets[1].code, "Admin Verify");
+    if (blocked.ok || blocked.ticket.status !== "revoked") {
+      throw new Error("revoked ticket was still checkable");
+    }
+
+    const reissued = await issueTicketsForOrder(client, {
+      id: reference,
+      name: "Tickets Verify",
+      qty: 2,
+      tier: "classic",
+      tickets: [{ tier: "classic", qty: 2 }],
+      participants: [],
+    });
+    if (!reissued.ok || reissued.reactivated !== 2) {
+      throw new Error("expected both tickets to reactivate");
+    }
+    const usedRow = reissued.tickets.find((ticket) => ticket.code === first.tickets[0].code);
+    const validRow = reissued.tickets.find((ticket) => ticket.code === first.tickets[1].code);
+    if (!usedRow || usedRow.status !== "used" || !usedRow.used_at) {
+      throw new Error("reactivated used ticket lost its used state");
+    }
+    if (!validRow || validRow.status !== "valid") {
+      throw new Error("reactivated unused ticket did not return to valid");
     }
 
     console.log(`tickets issue: ok (2 unique, idempotent)`);
     console.log(`tickets check-in: ok (used, duplicate rejected)`);
-    console.log(`tickets revoke: ok (${revoked.revoked} revoked, used preserved)`);
+    console.log(`tickets revoke: ok (2 revoked, used_at/by preserved)`);
+    console.log(`tickets reactivate: ok (used stays used, valid returns valid)`);
   } catch (error) {
     failed = true;
     const code = (error && error.code) || "unknown";

@@ -1,20 +1,26 @@
 /* Gala & Awards 2027 — ACNU. api/tickets/[code].js
- * GET  /api/tickets/:code          public ticket lookup (no buyer PII)
- * GET  /api/tickets/:code?format=qr|pdf public QR image or PDF pass
- * POST /api/tickets/:code          admin check-in
+ * GET  /api/tickets/:code              staff ticket lookup (no buyer PII)
+ * GET  /api/tickets/:code?format=qr    staff QR image
+ * GET  /api/tickets/:code?format=pdf   staff PDF pass
+ * POST /api/tickets/:code              staff check-in (mark present)
  *
- * Env: DATABASE_URL, FIREBASE_WEB_API_KEY, SITE_URL. */
+ * All methods require a valid Firebase ID token whose e-mail passes isStaff().
+ * Env: DATABASE_URL, FIREBASE_WEB_API_KEY, DOOR_STAFF_EMAILS, SITE_URL. */
 
 import pg from "pg";
-import { verifyAdmin } from "../_lib/admin.js";
+import { verifyStaff } from "../_lib/admin.js";
 import { EVENT, SITE_URL } from "../_lib/config.js";
 import { isValidCodeFormat } from "../_lib/codes.js";
 import { buildTicketPdf } from "../_lib/pass.js";
 import { makeQrPng, ticketUrl } from "../_lib/qr.js";
-import { checkInTicket, toPublicTicket } from "../_lib/tickets.js";
+import { checkInTicket, toStaffTicket } from "../_lib/tickets.js";
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+const TICKET_SELECT = `SELECT code, transaction_id, tier, participant_name, participant_index,
+                              status, issued_at, used_at, used_by
+                         FROM tickets WHERE code = $1`;
 
 function readCode(request) {
   const parts = new URL(request.url).pathname.split("/").filter(Boolean);
@@ -41,31 +47,31 @@ export default {
       return json({ ok: false, error: "Code de billet invalide." }, 400);
     }
 
-    if (request.method === "GET" && url.searchParams.get("format") === "qr") {
-      try {
-        const png = await makeQrPng(ticketUrl(code, baseUrl(request)));
-        return new Response(png, {
-          headers: {
-            "Content-Type": "image/png",
-            "Cache-Control": "public, max-age=86400, immutable",
-          },
-        });
-      } catch (error) {
-        console.error(
-          "ticket QR error code=" + ((error && error.code) || "unknown")
-        );
-        return json({ ok: false, error: "QR code indisponible." }, 500);
-      }
-    }
-
     if (request.method === "GET") {
+      const auth = await verifyStaff(request);
+      if (auth.error) {
+        return json({ ok: false, error: auth.error }, auth.status);
+      }
+
+      if (url.searchParams.get("format") === "qr") {
+        try {
+          const png = await makeQrPng(ticketUrl(code, baseUrl(request)));
+          return new Response(png, {
+            headers: {
+              "Content-Type": "image/png",
+              "Cache-Control": "private, max-age=86400",
+            },
+          });
+        } catch (error) {
+          console.error(
+            "ticket QR error code=" + ((error && error.code) || "unknown")
+          );
+          return json({ ok: false, error: "QR code indisponible." }, 500);
+        }
+      }
+
       try {
-        const { rows } = await pool.query(
-          `SELECT code, transaction_id, tier, participant_name, participant_index,
-                  status, issued_at, used_at, used_by
-             FROM tickets WHERE code = $1`,
-          [code]
-        );
+        const { rows } = await pool.query(TICKET_SELECT, [code]);
         if (!rows.length) {
           return json({ ok: false, error: "Billet introuvable." }, 404);
         }
@@ -85,11 +91,8 @@ export default {
 
         return json({
           ok: true,
-          ticket: toPublicTicket(rows[0]),
+          ticket: toStaffTicket(rows[0]),
           event: EVENT,
-          ticketUrl: ticketUrl(code, baseUrl(request)),
-          qrUrl: `/api/tickets/${code}?format=qr`,
-          pdfUrl: `/api/tickets/${code}?format=pdf`,
         });
       } catch (error) {
         console.error(
@@ -100,42 +103,41 @@ export default {
     }
 
     if (request.method === "POST") {
-      const auth = await verifyAdmin(request);
+      const auth = await verifyStaff(request);
       if (auth.error) {
         return json({ ok: false, error: auth.error }, auth.status);
       }
 
-      let body = null;
       try {
-        body = JSON.parse(await request.text());
-      } catch {
-        body = null;
-      }
-
-      try {
-        const result = await checkInTicket(
-          pool,
-          code,
-          (body && body.usedBy) || auth.email || "Admin ACNU"
-        );
+        /* The staff member's verified e-mail is the only accepted used_by
+         * value; client-supplied identity is ignored. */
+        const result = await checkInTicket(pool, code, auth.email);
         if (result.notFound) {
           return json({ ok: false, error: "Billet introuvable." }, 404);
         }
         if (!result.ok) {
-          const status = result.ticket.status === "revoked" ? 410 : 409;
-          const error =
-            result.ticket.status === "revoked"
-              ? "Billet annulé."
-              : "Billet déjà utilisé.";
+          if (result.ticket.status === "revoked") {
+            return json(
+              {
+                ok: false,
+                reason: "ticket_revoked",
+                error: "Billet annulé — refus d'entrée.",
+                ticket: toStaffTicket(result.ticket),
+              },
+              410
+            );
+          }
           return json(
-            { ok: false, error, ticket: toPublicTicket(result.ticket, { admin: true }) },
-            status
+            {
+              ok: false,
+              reason: "ticket_already_used",
+              error: "Billet déjà utilisé.",
+              ticket: toStaffTicket(result.ticket),
+            },
+            409
           );
         }
-        return json({
-          ok: true,
-          ticket: toPublicTicket(result.ticket, { admin: true }),
-        });
+        return json({ ok: true, ticket: toStaffTicket(result.ticket) });
       } catch (error) {
         console.error(
           "ticket check-in error code=" + ((error && error.code) || "unknown")

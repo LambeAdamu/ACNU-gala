@@ -365,9 +365,162 @@ function initMarquee() {
   if (empty) empty.hidden = true;
 }
 
+/* ------------------------------------------------------------------
+ * Hero "Découvrir l'événement" video modal
+ * - Lazy src (set on first open, never on page load)
+ * - play() is called synchronously from the opening click
+ * - Focus trap, Escape / backdrop / close-button dismissal, focus return
+ * - Reduced motion shows the manual "Lecture" control instead of autoplay
+ * ------------------------------------------------------------------ */
+function initHeroVideoModal() {
+  const openBtn = document.querySelector("[data-discover-open]");
+  const modal = document.getElementById("discoverModal");
+  if (!openBtn || !modal) return;
+
+  const panel = modal.querySelector(".video-modal__panel");
+  const video = modal.querySelector(".video-modal__video");
+  const message = modal.querySelector(".video-modal__message");
+  const playBtn = modal.querySelector(".video-modal__play");
+  if (!panel || !video || !message || !playBtn) return;
+
+  const VIDEO_SRC = "assets/video/Decouvrir.mp4";
+  let srcSet = false;
+  let failed = false;
+
+  const isOpen = () => !modal.hidden;
+
+  const focusables = () =>
+    Array.from(
+      modal.querySelectorAll(
+        'button:not([disabled]), a[href], video[controls], [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(
+      (el) => el.getAttribute("aria-hidden") !== "true" && el.getClientRects().length > 0
+    );
+
+  const showPlaybackFallback = () => {
+    if (failed) return;
+    video.pause();
+    video.hidden = true;
+    message.hidden = true;
+    playBtn.hidden = false;
+  };
+
+  const showUnavailable = () => {
+    failed = true;
+    video.pause();
+    video.hidden = true;
+    playBtn.hidden = true;
+    message.hidden = false;
+  };
+
+  const attemptPlay = () => {
+    if (failed) {
+      showUnavailable();
+      return;
+    }
+    video.hidden = false;
+    message.hidden = true;
+    playBtn.hidden = true;
+    let request;
+    try {
+      request = video.play();
+    } catch (err) {
+      showPlaybackFallback();
+      return;
+    }
+    if (request && typeof request.catch === "function") {
+      request.catch(showPlaybackFallback);
+    }
+  };
+
+  const openModal = () => {
+    modal.hidden = false;
+    document.body.classList.add("is-video-modal-open");
+
+    if (!srcSet) {
+      video.src = VIDEO_SRC;
+      video.load();
+      srcSet = true;
+    }
+
+    const closeBtn = modal.querySelector(".video-modal__close");
+    if (closeBtn) closeBtn.focus();
+
+    if (failed) {
+      showUnavailable();
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      showPlaybackFallback();
+      return;
+    }
+    attemptPlay();
+  };
+
+  const closeModal = () => {
+    if (!isOpen()) return;
+    video.pause();
+    modal.hidden = true;
+    document.body.classList.remove("is-video-modal-open");
+    openBtn.focus();
+  };
+
+  openBtn.addEventListener("click", openModal);
+  playBtn.addEventListener("click", attemptPlay);
+  video.addEventListener("error", showUnavailable);
+  video.addEventListener("playing", () => {
+    video.hidden = false;
+    message.hidden = true;
+    playBtn.hidden = true;
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-discover-close]")) closeModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (!isOpen()) return;
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeModal();
+      return;
+    }
+
+    if (e.key !== "Tab") return;
+
+    const items = focusables();
+    if (!items.length) {
+      e.preventDefault();
+      panel.focus();
+      return;
+    }
+
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+
+    if (!modal.contains(active)) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+      return;
+    }
+
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initHeader();
   initReveal();
   initMarquee();
   initRouter();
+  initHeroVideoModal();
 });

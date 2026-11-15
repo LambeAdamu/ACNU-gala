@@ -119,6 +119,7 @@
       font-family: var(--font-body), system-ui, -apple-system, "Segoe UI", sans-serif;
       font-weight: 700;
       font-size: 1rem;
+      line-height: 1.6;
       letter-spacing: .01em;
     }
     .hero__btn--gold {
@@ -296,7 +297,7 @@
             <div class="hero__info-block" role="listitem">
               <svg class="hero__info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
               <span class="hero__info-text">
-                <span class="hero__info-strong">7 février 2027</span>
+                <span class="hero__info-strong">samedi 6 février 2027</span>
                 <span class="hero__info-soft">19h00</span>
               </span>
             </div>
@@ -304,7 +305,7 @@
             <div class="hero__info-block" role="listitem">
               <svg class="hero__info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <span class="hero__info-text">
-                <span class="hero__info-strong">Douala, Cameroun</span>
+                <span class="hero__info-strong">Cordia Hall – Cité des Palmiers – Douala, Cameroun</span>
               </span>
             </div>
           </div>
@@ -314,12 +315,12 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 100-4V8z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>
               Acheter un billet
             </a>
-            <a class="btn hero__btn hero__btn--outline" href="#/a-propos" aria-label="Découvrir l'événement">
+            <button class="btn hero__btn hero__btn--outline" type="button" aria-label="Découvrir l'événement" aria-haspopup="dialog" aria-controls="discoverModal" data-discover-open>
               <span class="hero__play" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
               </span>
               Découvrir l'événement
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -467,7 +468,7 @@
           <p class="kicker">Prix &amp; distinctions 2027</p>
           <h2 class="sec-head__title">Les catégories à l'honneur cette année</h2>
           <p class="sec-head__lede">
-            Six prix majeurs valorisent le mérite académique, le leadership et l'engagement citoyen.
+            13 catégories valorisent le mérite académique, le leadership, l'engagement citoyen et l'excellence sous toutes ses formes.
             Chaque catégorie peut être <strong>parrainée par un partenaire</strong> pour y associer son image.
           </p>
         </div>
@@ -477,72 +478,143 @@
             <div class="listing__head">
               <span class="listing__badge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
-                Mérite
+                Secondaire
               </span>
             </div>
-            <h3>Excellence Académique</h3>
-            <p class="listing__desc">Récompense le mérite scolaire et intellectuel des élèves et étudiants les plus brillants.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+            <h3>Excellence Scolaire Niveau Secondaire</h3>
+            <p class="listing__desc">Récompense les élèves du secondaire dont les résultats scolaires sont exceptionnels.</p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.08s">
+          <article class="card listing" data-reveal>
             <div class="listing__head">
               <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Universitaire
+              </span>
+            </div>
+            <h3>Excellence Académique Niveau Universitaire</h3>
+            <p class="listing__desc">Distingue les étudiants universitaires les plus brillants.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Innovation
+              </span>
+            </div>
+            <h3>Prix de l'Innovation</h3>
+            <p class="listing__desc">Honore les idées et projets qui ouvrent de nouvelles voies.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Leadership
+              </span>
+            </div>
+            <h3>Prix du Meilleur Leader</h3>
+            <p class="listing__desc">Met à l'honneur une figure de leadership inspirante.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Citoyenneté
+              </span>
+            </div>
+            <h3>Prix Engagement Citoyen</h3>
+            <p class="listing__desc">Valorise l'engagement au service de la communauté.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Éloquence
+              </span>
+            </div>
+            <h3>Meilleur Orateur</h3>
+            <p class="listing__desc">Récompense l'art de convaincre et la maîtrise de la parole.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Encadrement
+              </span>
+            </div>
+            <h3>Prix Meilleur Encadreur</h3>
+            <p class="listing__desc">Distingue un encadreur dont l'accompagnement fait la différence.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
                 Égalité
               </span>
             </div>
-            <h3>Excellence Féminine</h3>
-            <p class="listing__desc">Met en lumière les parcours féminins d'exception dans les études et le leadership.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+            <h3>Prix Excellence Féminine</h3>
+            <p class="listing__desc">Célèbre les parcours féminins d'excellence.</p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.16s">
+          <article class="card listing" data-reveal>
             <div class="listing__head">
               <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-                Influence
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Jury
               </span>
             </div>
-            <h3>Leadership</h3>
-            <p class="listing__desc">Distingue les jeunes qui incarnent l'impact, la prise de décision et l'exemple.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+            <h3>Prix Spécial du Jury (aux Parents)</h3>
+            <p class="listing__desc">Prix décerné par le jury aux parents engagés aux côtés des jeunes.</p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.24s">
+          <article class="card listing" data-reveal>
             <div class="listing__head">
               <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.2L12 16.6l-6.3 4.5 2.3-7.2-6-4.5h7.6L12 2z"/></svg>
-                Impact
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Paix
               </span>
             </div>
-            <h3>Engagement Citoyen</h3>
-            <p class="listing__desc">Honore les jeunes engagés pour leur communauté, la paix et le développement.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+            <h3>Prix de la Promotion de la Paix &amp; Médiation</h3>
+            <p class="listing__desc">Récompense les actions en faveur de la paix et de la médiation.</p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.32s">
+          <article class="card listing" data-reveal>
             <div class="listing__head">
               <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
-                À définir
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Distinction
               </span>
             </div>
-            <h3>Catégorie à définir</h3>
-            <p class="listing__desc">Description à venir : cette catégorie sera précisée par l'organisation.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+            <h3>Prix Spécial « Mbessé Awomo François »</h3>
+            <p class="listing__desc">Un prix spécial qui porte le nom de Mbessé Awomo François.</p>
           </article>
 
-          <article class="card listing" data-reveal style="--reveal-delay:.4s">
+          <article class="card listing" data-reveal>
             <div class="listing__head">
               <span class="listing__badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4a5 5 0 015 5v8a5 5 0 01-5 5h-4a5 5 0 01-5-5V8a5 5 0 015-5z"/><path d="M12 7v6M9 16l3 3 3-3"/></svg>
-                À définir
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Compétition
               </span>
             </div>
-            <h3>Catégorie à définir</h3>
-            <p class="listing__desc">Description à venir : cette catégorie sera précisée par l'organisation.</p>
-            <p class="listing__winner">Dernier lauréat : <b>À confirmer</b></p>
+            <h3>Trophée Match des Incollables (Bronze, Argent &amp; Or)</h3>
+            <p class="listing__desc">Trophée décerné en bronze, argent et or à l'issue du Match des Incollables.</p>
+          </article>
+
+          <article class="card listing" data-reveal>
+            <div class="listing__head">
+              <span class="listing__badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h12M12 21V8l-4 1v4"/><path d="M9 21v-6l-2 1M19 13l-3.5-4.5-1.5 1.5V21h5v-8z"/></svg>
+                Débat
+              </span>
+            </div>
+            <h3>Trophée Débat (Bronze, Argent &amp; Or)</h3>
+            <p class="listing__desc">Trophée décerné en bronze, argent et or à l'issue du débat.</p>
           </article>
         </div>
       </div>
@@ -767,6 +839,22 @@
       <div class="pay-modal__actions">
         <button type="button" class="btn btn--ghost" id="payModalCancel">Annuler</button>
         <button type="button" class="btn" id="payModalConfirm">Valider et envoyer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Découvrir l'événement (video modal) ============ -->
+  <div id="discoverModal" class="video-modal" role="dialog" aria-modal="true" aria-labelledby="discoverModalTitle" hidden>
+    <div class="video-modal__backdrop" data-discover-close aria-hidden="true"></div>
+    <div class="video-modal__panel" role="document" tabindex="-1">
+      <button type="button" class="video-modal__close" aria-label="Fermer la vidéo" data-discover-close>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 id="discoverModalTitle" class="video-modal__title">Découvrir l'événement</h2>
+      <div class="video-modal__stage">
+        <video class="video-modal__video" controls playsinline preload="none" aria-label="Vidéo de présentation de l'événement"></video>
+        <p class="video-modal__message" role="status" hidden>Vidéo bientôt disponible.</p>
+        <button type="button" class="btn video-modal__play" hidden>Lecture</button>
       </div>
     </div>
   </div>
